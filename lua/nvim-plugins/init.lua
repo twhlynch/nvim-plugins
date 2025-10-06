@@ -11,12 +11,15 @@ function M.load(name, opts)
 		if plugin ~= nil and plugin.setup ~= nil then
 			---@diagnostic disable-next-line: undefined-field
 			plugin.setup(opts)
+			Plugins[name] = plugin
 		end
 	end
 end
 
 function M.setup(opts)
 	options = vim.tbl_deep_extend("keep", opts or {}, options)
+
+	Plugins = {}
 
 	for name, config in pairs(options) do
 		if config ~= nil and config.enabled == true then
