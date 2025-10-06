@@ -10,8 +10,8 @@ setmetatable(M, {
 _G.Plugins = M
 
 function M.load(name, opts)
-	local plugin, ok = pcall(require, "nvim-plugins." .. name)
-	if ok == true and plugin ~= nil then
+	local plugin = require("nvim-plugins." .. name)
+	if plugin ~= nil then
 		---@diagnostic disable-next-line: undefined-field
 		if plugin ~= nil and plugin.setup ~= nil then
 			---@diagnostic disable-next-line: undefined-field
