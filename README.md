@@ -45,6 +45,24 @@ return {
 			},
 		},
 		scrollbar_marks = { enabled = false },
+		surround = {
+			enabled = false,
+			prefix = "s",
+			mapping = {
+				["()90"] = { "(", ")" },
+				["[]"] = { "[", "]" },
+				["<>"] = { "<", ">" },
+				["{}"] = { "{", "}" },
+				["$4"] = { "$$ ", " $$" },
+				"|",
+				"'",
+				'"',
+				"`",
+				"*",
+				"_",
+				"%",
+			},
+		},
 		ai = {
 			enabled = false,
 			fix = {
