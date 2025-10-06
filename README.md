@@ -73,7 +73,10 @@ return {
 				rgb = "rgba?%(%d%d?%d?, ?%d%d?%d?, ?%d%d?%d?,? ?%d?%.?%d%)", -- rgb or rgba css color
 				ansi = "%[[34]8;2;%d%d?%d?;%d%d?%d?;%d%d?%d?m%f[%W]", -- r;g;b ansi code for fg or bg
 			},
-		}
+		},
+		scrollbar_todo = {
+			enabled = true,
+		},
 		ai = {
 			enabled = false,
 			fix = {
