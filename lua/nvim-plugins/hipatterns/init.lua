@@ -1,4 +1,4 @@
-local M
+local M = {}
 
 local options = {
 	hex = false,
