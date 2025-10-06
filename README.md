@@ -113,29 +113,8 @@ if there is no error provided, find issues in the code and fix them.
 				enabled = false,
 				prompt = {
 					template = [[
-in __file__:
-```
-__lines__
-```
-
-errors:
-```
-__errors__
-```
-
-__prompt__
-
-]],
-					simple = [[
-fix the code. keep your solution short and respond with only fixed lines, not surrounding code.
-if there is no error provided, figure out the issue anyway.
-specify the correct language in the markdown codeblock.
-you must respond with only 1 codeblock and nothing else.
-]],
-					complex = [[
-respond with an explaination of the code, then an explaination of the error.
-then an explaination of how to fix the error with the full solution in code.
-if there is no error provided, find issues in the code and fix them.
+SYSTEM: You are a Vim and Neovim expert. Convert requests to real Neovim commands or macros. Only output the command without explanation. Do not hallucinate. Do not make up commands.
+USER: __PROMPT__
 ]],
 				},
 			},
