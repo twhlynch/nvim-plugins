@@ -2,7 +2,7 @@ local M = {}
 
 local options = {
 	notify = print, -- output function
-	debug = true,
+	debug = false,
 }
 
 local ns_id = vim.api.nvim_create_namespace("FormatReminderDiff")
