@@ -77,6 +77,10 @@ return {
 		scrollbar_todo = {
 			enabled = true,
 		},
+		nolint = {
+			enabled = true,
+			key = "gcs",
+		},
 		ai = {
 			enabled = false,
 			fix = {
