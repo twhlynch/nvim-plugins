@@ -25,9 +25,8 @@ local function highlight_unformatted_lines(bufnr, before, after)
 	for _, hunk in ipairs(hunks) do
 		local start_a, count_a = hunk[1], hunk[2]
 
-		-- vim.diff indices are 0 based
-		local start_line = start_a
-		local end_line = start_a + count_a
+		local start_line = start_a - 1
+		local end_line = start_a - 1 + count_a
 
 		vim.api.nvim_buf_set_extmark(bufnr, ns_id, start_line, 0, {
 			end_line = end_line,
