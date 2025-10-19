@@ -89,7 +89,6 @@ return {
 		{ "l", function() Plugins.origami.l() end, desc = "Origami l", },
 		{ "<leader>jp", function() Plugins.pear.jump_pair() end, desc = "Jump file pair", },
 		{ "<leader>K", function() Plugins.reviews.get_current_line_comments() end, desc = "Show line PR Review Comments", },
-		{ "<leader>jp", function() Plugins.pear.jump_pair() end, desc = "Jump file pair", },
 		{ "]r", function() Plugins.regions.goto_next_region() end, desc = "Next region", },
 		{ "[r", function() Plugins.regions.goto_prev_region() end, desc = "Previous region", },
 		{ "<leader>bf", function() Plugins.blame.show_blame() end, desc = "Show file blame", },
