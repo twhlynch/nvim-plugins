@@ -25,6 +25,8 @@ function M.hex_handler(_, _, data)
 
 	if hex:sub(1, 2) == "0x" then
 		hex = "#" .. hex:sub(3, #hex)
+	elseif hex:sub(1, 1) ~= "#" then
+		hex = "#" .. hex:sub(2, #hex)
 	end
 
 	if #hex == 4 or #hex == 5 or #hex == 6 then
