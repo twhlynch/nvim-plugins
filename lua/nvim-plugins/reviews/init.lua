@@ -1,4 +1,4 @@
-local U = require("twhlynch.personal-plugins.util")
+local U = require("nvim-plugins.util")
 
 local M = {}
 
