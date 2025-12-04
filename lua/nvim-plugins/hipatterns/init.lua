@@ -4,10 +4,12 @@ local options = {
 	hex = false,
 	rgb = false,
 	ansi = false,
+	env = false,
 	patterns = {
 		hex = "0?[#x]%x%x%x%x?%x?%x?%x?%x?%f[%W]", -- 3 - 8 length hex. # or 0x
 		rgb = "rgba?%(%d%d?%d?, ?%d%d?%d?, ?%d%d?%d?,? ?%d?%.?%d%)", -- rgb or rgba css color
 		ansi = "%[[34]8;2;%d%d?%d?;%d%d?%d?;%d%d?%d?m%f[%W]", -- r;g;b ansi code for fg or bg
+		env = '".-"', -- env values
 	},
 }
 
@@ -95,6 +97,8 @@ function M.setup(opts)
 
 	local hipatterns = require("mini.hipatterns")
 
+	vim.api.nvim_set_hl(0, "EnvBlackout", { fg = "#040101", bg = "#040101" })
+
 	local highlighters = {}
 	if options.hex then
 		highlighters.hex_color = {
@@ -115,6 +119,18 @@ function M.setup(opts)
 			pattern = options.patterns.ansi,
 			group = M.ansi_handler,
 			extmark_opts = { priority = 200 },
+		}
+	end
+	if options.env then
+		highlighters.env_color = {
+			pattern = function(bufnr)
+				local name = vim.api.nvim_buf_get_name(bufnr)
+				local fname = name:match("^.+/(.+)$") or name
+				local is_env = fname == ".env" or fname:match("%.env%.")
+				return is_env and options.patterns.env or "$^"
+			end,
+			group = "EnvBlackout",
+			extmark_opts = { priority = 300 },
 		}
 	end
 
