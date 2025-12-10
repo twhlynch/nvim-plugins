@@ -5,6 +5,7 @@ local options = {
 	rgb = false,
 	ansi = false,
 	env = false,
+	css = false,
 	patterns = {
 		hex = "0?[#x]%x%x%x%x?%x?%x?%x?%x?%f[%W]", -- 3 - 8 length hex. # or 0x
 		rgb = "rgba?%(%d%d?%d?, ?%d%d?%d?, ?%d%d?%d?,? ?%d?%.?%d%)", -- rgb or rgba css color
@@ -92,12 +93,74 @@ function M.ansi_handler(_, _, data)
 	return require("mini.hipatterns").compute_hex_color_group(hex, "bg")
 end
 
+local css_vars = {}
+
+local function parse_css_variables(bufnr)
+	local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+	for _, line in ipairs(lines) do
+		-- --var-name: value;
+		for name, value in line:gmatch("%s*(%-%-[%w%-]+)%s*:%s*([^;]+);") do
+			css_vars[name] = value
+		end
+	end
+end
+
+local function resolve_css_var(var_name, seen)
+	-- prevent cycles
+	seen = seen or {}
+	if seen[var_name] then
+		return nil
+	end
+	seen[var_name] = true
+
+	local val = css_vars[var_name]
+	if not val then
+		return nil
+	end
+
+	-- resolve recursively
+	local ref = val:match("var%((%-%-[%w%-]+)%)")
+	if ref then
+		return resolve_css_var(ref, seen)
+	else
+		return val
+	end
+end
+
+function M.css_var_handler(_, _, data)
+	local var_name = data.full_match:match("var%((%-%-[%w%-]+)%)")
+	if not var_name then
+		return nil
+	end
+
+	local color = resolve_css_var(var_name)
+	if not color then
+		return nil
+	end
+
+	if color:match("^#") then
+		return M.hex_handler(_, _, { full_match = color })
+	elseif color:match("^rgb") then
+		return M.rgb_handler(_, _, { full_match = color })
+	end
+
+	return nil
+end
+
 function M.setup(opts)
 	options = vim.tbl_deep_extend("keep", opts or {}, options)
 
 	local hipatterns = require("mini.hipatterns")
 
 	vim.api.nvim_set_hl(0, "EnvBlackout", { fg = "#040101", bg = "#040101" })
+	vim.api.nvim_set_hl(0, "FailHighlight", { bg = "#300000" })
+
+	vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
+		pattern = { "*.css" },
+		callback = function(args)
+			parse_css_variables(args.buf)
+		end,
+	})
 
 	local highlighters = {}
 	if options.hex then
@@ -131,6 +194,16 @@ function M.setup(opts)
 			end,
 			group = "EnvBlackout",
 			extmark_opts = { priority = 300 },
+		}
+	end
+	if options.css then
+		highlighters.css_var = {
+			pattern = "var%(%-%-[%w%-]+%)",
+			group = function(...)
+				local res = M.css_var_handler(...)
+				return res and res or "FailHighlight"
+			end,
+			extmark_opts = { priority = 250 },
 		}
 	end
 
