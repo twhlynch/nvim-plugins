@@ -34,6 +34,7 @@ return {
 		reminder = {
 			enabled = false,
 			notify = print,
+			numbers = false, -- highlight line or line numbers
 		},
 		reviews = {
 			enabled = false,

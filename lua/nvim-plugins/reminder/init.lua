@@ -3,6 +3,7 @@ local M = {}
 local options = {
 	notify = print, -- output function
 	debug = false,
+	numbers = false,
 }
 
 local ns_id = vim.api.nvim_create_namespace("FormatReminderDiff")
@@ -28,11 +29,19 @@ local function highlight_unformatted_lines(bufnr, before, after)
 		local start_line = math.max(start_a - 1, 1)
 		local end_line = math.max(start_a - 1 + count_a, 1)
 
-		vim.api.nvim_buf_set_extmark(bufnr, ns_id, start_line, 0, {
-			end_line = end_line,
-			hl_group = "DiffChange",
-			hl_eol = true,
-		})
+		if options.numbers then
+			vim.api.nvim_buf_set_extmark(bufnr, ns_id, start_line, 0, {
+				end_line = end_line - 1,
+				hl_eol = true,
+				number_hl_group = "Conceal",
+			})
+		else
+			vim.api.nvim_buf_set_extmark(bufnr, ns_id, start_line, 0, {
+				end_line = end_line - 1,
+				hl_group = "DiffChange",
+				hl_eol = true,
+			})
+		end
 	end
 
 	return true
