@@ -81,10 +81,10 @@ return {
 			},
 		},
 		scrollbar_todo = {
-			enabled = true,
+			enabled = false,
 		},
 		nolint = {
-			enabled = true,
+			enabled = false,
 			key = "gcs",
 		},
 	},
