@@ -87,6 +87,14 @@ return {
 			enabled = false,
 			key = "gcs",
 		},
+		breadcrumbs = {
+			enabled = false,
+			dark_color = "#606079",
+			light_color = "#e0a363",
+			max = 200,
+			max_moves = 2000,
+			decay_rate = 0.999,
+		}
 	},
 	keys = {
 		---@diagnostic disable: undefined-global
