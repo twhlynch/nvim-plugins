@@ -34,12 +34,14 @@ local function highlight_unformatted_lines(bufnr, before, after)
 				end_line = end_line - 1,
 				hl_eol = true,
 				number_hl_group = "Conceal",
+    			priority = 100,
 			})
 		else
 			vim.api.nvim_buf_set_extmark(bufnr, ns_id, start_line, 0, {
 				end_line = end_line - 1,
 				hl_group = "DiffChange",
 				hl_eol = true,
+				priority = 100,
 			})
 		end
 	end
