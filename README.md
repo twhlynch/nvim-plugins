@@ -1,6 +1,25 @@
 # A collection of Neovim plugins for my personal use
 
+| Plugin              | Description                                                       | Credit                             |
+| ------------------- | ------------------------------------------------------------------ | ---------------------------------- |
+| blame               | Viewing Git blame of all lines in a buffer                        | Based on VSCode                    |
+| copy lspconfig      | Quickly copy lspconfig configs into nvims config                  |                                    |
+| fff                 | Snacks Picker wrapper on fff.nvim                                 | By madmaxieee                      |
+| oil git             | Show git status in oil buffer                                     | Rewrite of benomahony/oil-git.nvim |
+| origami             | Use h and l to open close folds                                   | From chrisgrieser/nvim-origami     |
+| pear                | Super simple file pair jumping                                    | From sylvianfranklin/pear          |
+| regions             | Mark regions and jump between them with nvim-scrollbar handler    | Based on VSCode                    |
+| reminder            | Notify and highlight line numbers when saving unformatted content |                                    |
+| reviews             | Show GitHub PR reviews in buffer                                  |                                    |
+| scrotodollbar marks | Show marks in nvim-scrollbar                                      | By chrisgrieser                    |
+| surround            | Simple selected text surround plugin                              |                                    |
+| hipatterns          | Mini hipatterns handlers for various colors, css, and secrets     |                                    |
+| scrollbar todo      | Show folke/todo-comments in nvim-scrollbar                        |                                    |
+| nolint              | Quickly silent clang warnings                                     |                                    |
+| breadcrumbs         | Highlight line numbers with cursor activity                       |                                    |
+
 ## lazy.nvim
+
 ````lua
 return {
 	"twhlynch/nvim-plugins",
@@ -116,4 +135,3 @@ return {
 	},
 }
 ````
-
