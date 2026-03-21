@@ -1,22 +1,23 @@
 # A collection of Neovim plugins for my personal use
 
-| Plugin              | Description                                                       | Credit                             |
-| ------------------- | ------------------------------------------------------------------ | ---------------------------------- |
-| blame               | Viewing Git blame of all lines in a buffer                        | Based on VSCode                    |
-| copy lspconfig      | Quickly copy lspconfig configs into nvims config                  |                                    |
-| fff                 | Snacks Picker wrapper on fff.nvim                                 | By madmaxieee                      |
-| oil git             | Show git status in oil buffer                                     | Rewrite of benomahony/oil-git.nvim |
-| origami             | Use h and l to open close folds                                   | From chrisgrieser/nvim-origami     |
-| pear                | Super simple file pair jumping                                    | From sylvianfranklin/pear          |
-| regions             | Mark regions and jump between them with nvim-scrollbar handler    | Based on VSCode                    |
-| reminder            | Notify and highlight line numbers when saving unformatted content |                                    |
-| reviews             | Show GitHub PR reviews in buffer                                  |                                    |
-| scrotodollbar marks | Show marks in nvim-scrollbar                                      | By chrisgrieser                    |
-| surround            | Simple selected text surround plugin                              |                                    |
-| hipatterns          | Mini hipatterns handlers for various colors, css, and secrets     |                                    |
-| scrollbar todo      | Show folke/todo-comments in nvim-scrollbar                        |                                    |
-| nolint              | Quickly silent clang warnings                                     |                                    |
-| breadcrumbs         | Highlight line numbers with cursor activity                       |                                    |
+| Plugin              | Description                                                       | Credit                                 |
+| ------------------- | ----------------------------------------------------------------- | -------------------------------------- |
+| blame               | Viewing Git blame of all lines in a buffer                        | Based on VSCode                        |
+| copy lspconfig      | Quickly copy lspconfig configs into nvims config                  |                                        |
+| fff                 | Snacks Picker wrapper on fff.nvim                                 | By madmaxieee                          |
+| oil git             | Show git status in oil buffer                                     | Rewrite of benomahony/oil-git.nvim     |
+| origami             | Use h and l to open close folds                                   | From chrisgrieser/nvim-origami         |
+| pear                | Super simple file pair jumping                                    | From sylvianfranklin/pear              |
+| regions             | Mark regions and jump between them with nvim-scrollbar handler    | Based on VSCode                        |
+| reminder            | Notify and highlight line numbers when saving unformatted content |                                        |
+| reviews             | Show GitHub PR reviews in buffer                                  |                                        |
+| scrotodollbar marks | Show marks in nvim-scrollbar                                      | By chrisgrieser                        |
+| surround            | Simple selected text surround plugin                              |                                        |
+| hipatterns          | Mini hipatterns handlers for various colors, css, and secrets     |                                        |
+| scrollbar todo      | Show folke/todo-comments in nvim-scrollbar                        |                                        |
+| nolint              | Quickly silent clang warnings                                     |                                        |
+| breadcrumbs         | Highlight line numbers with cursor activity                       |                                        |
+| inlay               | Inject inlay hints into the buffer                                | Based on Davidyz/inlayhint-filler.nvim |
 
 ## lazy.nvim
 
@@ -113,7 +114,10 @@ return {
 			max = 200,
 			max_moves = 2000,
 			decay_rate = 0.999,
-		}
+		},
+		inlay = {
+			enabled = false,
+		},
 	},
 	keys = {
 		---@diagnostic disable: undefined-global
@@ -131,6 +135,7 @@ return {
 		{ "<leader><leader>", function() Plugins.fff.fff() end, desc = "FFF", },
 		{ "<leader>Rr", function() Plugins.reviews.get_pr_review_comments() end, desc = "Refresh Reviews", },
 		{ "<leader>Ro", function() Plugins.oil_git.update_git_status() end, desc = "Refresh Oil Git", },
+		{ "<leader>hI", mode = { "n", "x" }, function() Plugins.inlay.inject_inlay_hints() end, desc = "Inject inlay hints", },
 		-- stylua: ignore end
 	},
 }
