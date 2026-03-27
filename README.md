@@ -20,7 +20,11 @@
 | inlay               | Inject inlay hints into the buffer                                | Based on Davidyz/inlayhint-filler.nvim |
 | notebook            | Edit and run jupyter notebooks                                    |                                        |
 
-## lazy.nvim
+## Default config
+
+Example for `lazy.nvim`.
+
+All plugins are disabled by default. Changeing `enabled` to true will setup that plugin with the options specified overriding the defaults.
 
 ````lua
 return {
