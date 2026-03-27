@@ -18,6 +18,7 @@
 | nolint              | Quickly silent clang warnings                                     |                                        |
 | breadcrumbs         | Highlight line numbers with cursor activity                       |                                        |
 | inlay               | Inject inlay hints into the buffer                                | Based on Davidyz/inlayhint-filler.nvim |
+| notebook            | Edit and run jupyter notebooks                                    |                                        |
 
 ## lazy.nvim
 
@@ -118,6 +119,32 @@ return {
 		inlay = {
 			enabled = false,
 		},
+		notebook = {
+			enabled = false,
+			keybind_prefix = "<leader>c",
+			max_output_lines = 10,
+			custom_plot_theme = true,
+			custom_theme_colors = { '#4878CF', '#6ACC65', '#D65F5F', '#B47CC7', '#C4AD66', '#77BEDB' },
+			hl = {
+				output  = "NonText",
+				error   = "DiagnosticError",
+				hint    = "DiagnosticHint",
+				success = "DiagnosticOk",
+			},
+			strings = {
+				output_border    = "┃   ",
+				cell_border      = "─",
+				cell_executed    = "[ ✓ Done ]",
+				truncated_output = "<Enter> %s more lines",
+				image_output     = "<gx> %s × image",
+				bridge_error    = "Jupyter Bridge Error: ",
+				install_prompt  = "Missing 'jupyter_client'. Install with pip?",
+				no_client       = "Not running client",
+				installing      = "Installing jupyter_client...",
+				install_success = "Successfully installed",
+				install_fail    = "Failed to install",
+			},
+		}
 	},
 	keys = {
 		---@diagnostic disable: undefined-global
