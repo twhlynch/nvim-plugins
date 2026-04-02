@@ -12,8 +12,13 @@ local options = {
 		run_cell            = "r",
 		run_all_cells       = "a",
 		run_previous_cells  = "p",
+
+		next_cell           = "]c",
+		previous_cell       = "[c",
+
 		clear_all_output    = "x",
 		refresh_all_output  = "R",
+
 		open_image          = "gx",
 		show_output         = "<CR>",
 	},
@@ -726,6 +731,26 @@ function M.clear_output()
 	end
 end
 
+function M.jump_cell(next)
+	local bufnr = api.nvim_get_current_buf()
+	local state = M.get_state(bufnr)
+
+	M.parse_buffer(bufnr)
+
+	local idx = M.get_current_cell_index()
+	if not idx then
+		return
+	end
+
+	local target = next and (idx + 1) or (idx - 1)
+	local cell = state.parsed_cells[target]
+	if not cell then
+		return
+	end
+
+	api.nvim_win_set_cursor(0, { cell.start_line + 1, 0 })
+end
+
 -- main file content handling
 
 function M.parse_buffer(bufnr)
@@ -911,14 +936,17 @@ function M.setup_file(args)
 	local b = { buffer = bufnr, silent = true }
 	local pref = options.keybind_prefix
 	local keys = options.keys
+
 	-- stylua: ignore start
-	vim.keymap.set("n", pref .. keys.run_all_cells,      function() M.run_cells("all") end,      b)
+	vim.keymap.set("n", pref .. keys.run_all_cells,      function() M.run_cells("all") end,      b) -- running
 	vim.keymap.set("n", pref .. keys.run_cell,           function() M.run_cells("current") end,  b)
 	vim.keymap.set("n", pref .. keys.run_previous_cells, function() M.run_cells("previous") end, b)
-	vim.keymap.set("n", pref .. keys.clear_all_output,   M.clear_output,                         b)
+	vim.keymap.set("n", pref .. keys.clear_all_output,   M.clear_output,                         b) -- output
 	vim.keymap.set("n", pref .. keys.refresh_all_output, function() M.render(bufnr) end,         b)
-	vim.keymap.set("n",         keys.open_image,         M.gx_handler,                           b)
+	vim.keymap.set("n",         keys.open_image,         M.gx_handler,                           b) -- viewing
 	vim.keymap.set("n",         keys.show_output,        M.open_output_float,                    b)
+	vim.keymap.set("n",         keys.next_cell,          function() M.jump_cell(true) end,       b) -- navigation
+	vim.keymap.set("n",         keys.previous_cell,      function() M.jump_cell(false) end,      b)
 	-- stylua: ignore end
 
 	-- override :w with custom save
