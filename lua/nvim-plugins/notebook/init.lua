@@ -6,6 +6,7 @@ local options = {
 	max_output_lines = 10,
 	custom_plot_theme = true,
 	custom_theme_colors = { '#4878CF', '#6ACC65', '#D65F5F', '#B47CC7', '#C4AD66', '#77BEDB' },
+	debug = false,
 
 	keys = {
 		run_cell            = "r",
@@ -358,7 +359,7 @@ function M.stdout_callback(bufnr, data)
 end
 
 function M.stderr_callback(_, data)
-	if not data or #data == 0 or data[1] == "" then
+	if not options.debug or not data or #data == 0 or data[1] == "" then
 		return
 	end
 	vim.schedule(function()
