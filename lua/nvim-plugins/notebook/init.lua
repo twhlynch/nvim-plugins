@@ -881,6 +881,7 @@ function M.setup_file(args)
 	vim.keymap.set("n", pref .. "r",    function() M.run_cells("current") end,  b)
 	vim.keymap.set("n", pref .. "p",    function() M.run_cells("previous") end, b)
 	vim.keymap.set("n", pref .. "x",    M.clear_output,                         b)
+	vim.keymap.set("n", pref .. "R",    function() M.render(bufnr) end,         b)
 	vim.keymap.set("n",         "gx",   M.gx_handler,                           b)
 	vim.keymap.set("n",         "<CR>", M.open_output_float,                    b)
 	-- stylua: ignore end
