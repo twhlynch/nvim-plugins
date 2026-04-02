@@ -38,6 +38,14 @@ function M.render(state)
 	end
 end
 
+function M.clear_images(state, index)
+	if state.snacks_images and state.snacks_images[index] then
+		for _, img in ipairs(state.snacks_images[index]) do
+			img:close()
+		end
+	end
+end
+
 function M.clear_ouput(state)
 	-- clear extmarks
 	vim.api.nvim_buf_clear_namespace(state.bufnr, M.output_ns, 0, -1)

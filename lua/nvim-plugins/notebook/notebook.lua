@@ -11,8 +11,39 @@ local api = vim.api
 local group = api.nvim_create_augroup("NotebookPlugin", { clear = true })
 M.group = group
 
+-- sync all """ and # """ delimiters after a cell change
+local function sync_buffer(state, cells)
+	local notebook_lines = {}
+
+	for i, cell in ipairs(cells) do
+		local src = cell.source
+
+		local delimeter = cell.type == "markdown" and '"""' or ""
+
+		-- borders
+		table.insert(notebook_lines, delimeter)
+		vim.list_extend(notebook_lines, src)
+		table.insert(notebook_lines, delimeter)
+
+		-- code to code
+		if cell.type == "code" then
+			local next_c = cells[i + 1]
+			if next_c and next_c.type == "code" then
+				table.insert(notebook_lines, '# """')
+			end
+		end
+	end
+
+	api.nvim_buf_set_lines(state.bufnr, 0, -1, false, notebook_lines)
+end
+
 function M.get_current_cell_index(state)
 	local cursor_line = api.nvim_win_get_cursor(0)[1] - 1
+
+	-- top line will get above
+	if cursor_line == 0 then
+		return 0
+	end
 
 	-- ensure parsed cells are up to date
 	M.parse_buffer(state)
@@ -26,9 +57,88 @@ function M.get_current_cell_index(state)
 	return nil
 end
 
+function M.insert_cell(state, cell_type)
+	M.parse_buffer(state)
+	local cells = state.parsed_cells
+	local current_idx = M.get_current_cell_index(state) or #cells
+
+	-- new blank cell
+	local source = cell_type == "code" and options.strings.new_code_cell or options.strings.new_cell
+	local new_cell = { type = cell_type, source = source }
+
+	-- insert directly below current
+	local insert_idx = current_idx + 1
+	table.insert(cells, insert_idx, new_cell)
+
+	-- sync state
+	table.insert(state.output_store, insert_idx, {})
+	if state.snacks_images then
+		table.insert(state.snacks_images, insert_idx, {})
+	else
+		state.snacks_images = { [insert_idx] = {} }
+	end
+
+	-- sync buffer
+	sync_buffer(state, cells)
+	M.rerender(state)
+
+	-- move cursor into the new cell
+	local target_cell = state.parsed_cells[insert_idx]
+	if target_cell then
+		-- middle for code, start for md
+		api.nvim_win_set_cursor(0, { target_cell.start_line + 1 + (cell_type == "code" and 1 or 0), 0 })
+	end
+
+	-- insert mode eol
+	vim.cmd("startinsert!")
+end
+
+function M.remove_cell(state)
+	M.parse_buffer(state)
+	local cells = state.parsed_cells
+	local current_idx = M.get_current_cell_index(state)
+
+	-- first line returns 0
+	if current_idx == 0 then
+		current_idx = 1
+	end
+
+	if not current_idx then
+		return
+	end
+
+	-- prevent completely clearing the file
+	if #cells <= 1 then
+		cells[1].source = { "" }
+	else
+		table.remove(cells, current_idx)
+		table.remove(state.output_store, current_idx)
+		if state.snacks_images then
+			rendering.clear_images(state, current_idx)
+			table.remove(state.snacks_images, current_idx)
+		end
+	end
+
+	-- apply cleanly to buffer
+	sync_buffer(state, cells)
+	M.rerender(state)
+
+	-- fallback cursor to the cell that took its place, or the new bottom cell
+	local target_idx = math.min(current_idx, #state.parsed_cells)
+	local target_cell = state.parsed_cells[target_idx]
+	if target_cell then
+		api.nvim_win_set_cursor(0, { target_cell.start_line + 1, 0 })
+	end
+end
+
 function M.open_output(state)
 	-- get cell containing cursor
 	local cell_idx = M.get_current_cell_index(state)
+
+	-- first line returns 0
+	if cell_idx == 0 then
+		cell_idx = 1
+	end
 
 	-- check it has output
 	if not cell_idx or not state.output_store[cell_idx] then
@@ -80,6 +190,11 @@ end
 function M.gx_handler(state)
 	-- get cell containing cursor
 	local cell_idx = M.get_current_cell_index(state)
+
+	-- first line returns 0
+	if cell_idx == 0 then
+		cell_idx = 1
+	end
 
 	-- check it has output
 	if not cell_idx or not state.output_store[cell_idx] then
@@ -133,6 +248,12 @@ function M.jump_cell(state, next)
 	M.parse_buffer(state)
 
 	local idx = M.get_current_cell_index(state)
+
+	-- first line returns 0
+	if idx == 0 then
+		idx = 1
+	end
+
 	if not idx then
 		return
 	end
@@ -305,6 +426,11 @@ function M.run_cells(state, mode)
 
 	-- get current cell
 	local current_idx = M.get_current_cell_index(state)
+
+	if current_idx == 0 then
+		current_idx = 1
+	end
+
 	if not current_idx and mode ~= "all" then
 		return
 	end
@@ -345,16 +471,19 @@ function M.setup_file(args)
 	local keys = options.keys
 
 	-- stylua: ignore start
-	vim.keymap.set("n", pref .. keys.run_cell,           function() M.run_cells(state, "current") end,  b) -- running
-	vim.keymap.set("n", pref .. keys.run_cells_all,      function() M.run_cells(state, "all") end,      b)
-	vim.keymap.set("n", pref .. keys.run_cells_up,       function() M.run_cells(state, "up") end,       b)
-	vim.keymap.set("n", pref .. keys.run_cells_down,     function() M.run_cells(state, "down") end,     b)
-	vim.keymap.set("n", pref .. keys.clear_all_output,   function() M.clear_output(state) end,          b) -- output
-	vim.keymap.set("n", pref .. keys.refresh_all_output, function() M.rerender(state) end,              b)
-	vim.keymap.set("n",         keys.open_image,         function() M.gx_handler(state) end,            b) -- viewing
-	vim.keymap.set("n",         keys.show_output,        function() M.open_output(state) end,           b)
-	vim.keymap.set("n",         keys.next_cell,          function() M.jump_cell(state, true) end,       b) -- navigation
-	vim.keymap.set("n",         keys.previous_cell,      function() M.jump_cell(state, false) end,      b)
+	vim.keymap.set("n", pref .. keys.run_cell,           function() M.run_cells(state, "current") end,    b) -- running
+	vim.keymap.set("n", pref .. keys.run_cells_all,      function() M.run_cells(state, "all") end,        b)
+	vim.keymap.set("n", pref .. keys.run_cells_up,       function() M.run_cells(state, "up") end,         b)
+	vim.keymap.set("n", pref .. keys.run_cells_down,     function() M.run_cells(state, "down") end,       b)
+	vim.keymap.set("n", pref .. keys.clear_all_output,   function() M.clear_output(state) end,            b) -- output
+	vim.keymap.set("n", pref .. keys.refresh_all_output, function() M.rerender(state) end,                b)
+	vim.keymap.set("n",         keys.open_image,         function() M.gx_handler(state) end,              b) -- viewing
+	vim.keymap.set("n",         keys.show_output,        function() M.open_output(state) end,             b)
+	vim.keymap.set("n",         keys.next_cell,          function() M.jump_cell(state, true) end,         b) -- navigation
+	vim.keymap.set("n",         keys.previous_cell,      function() M.jump_cell(state, false) end,        b)
+	vim.keymap.set("n", pref .. keys.insert_markdown,    function() M.insert_cell(state, "markdown") end, b) -- editing cells
+	vim.keymap.set("n", pref .. keys.insert_code,        function() M.insert_cell(state, "code") end,     b)
+	vim.keymap.set("n", pref .. keys.remove_cell,        function() M.remove_cell(state) end,             b)
 	-- stylua: ignore end
 
 	-- override :w with custom save

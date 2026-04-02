@@ -15,6 +15,10 @@ return {
 		next_cell          = "]c",
 		previous_cell      = "[c",
 
+		insert_markdown    = "m",
+		insert_code        = "c",
+		remove_cell        = "X",
+
 		clear_all_output   = "x",
 		refresh_all_output = "R",
 
@@ -30,6 +34,9 @@ return {
 	},
 
 	strings = {
+		new_cell      = { "# " },
+		new_code_cell = { "# " },
+
 		output_border    = "┃   ",
 		cell_border      = "─",
 		cell_executed    = "[ ✓ Done ]",
