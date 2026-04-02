@@ -521,7 +521,18 @@ function M.run_cells(mode)
 		-- if cell is code
 		if all_cells[i].type == "code" then
 			-- get code lines
-			local code = table.concat(all_cells[i].source, "\n")
+			local processed = {}
+			for _, line in ipairs(all_cells[i].source) do
+				-- uncomment magics before sending
+				if line:match("^# %%") then
+					table.insert(processed, (line:gsub("^# ", "")))
+				else
+					table.insert(processed, line)
+				end
+			end
+			local code = table.concat(processed, "\n")
+
+			-- execute
 			if code ~= "" then
 				-- reset executed state
 				state.output_store[i] = { executed = false }
