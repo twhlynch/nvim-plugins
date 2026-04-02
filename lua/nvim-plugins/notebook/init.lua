@@ -511,7 +511,7 @@ function M.run_cells(mode)
 	-- cells to run based on mode
 	local mode_indices = {
 		all = vim.fn.range(1, #all_cells),
-		above = vim.fn.range(1, current_idx),
+		previous = vim.fn.range(1, current_idx),
 		current = { current_idx },
 	}
 	local indices = mode_indices[mode]
@@ -864,12 +864,14 @@ function M.setup_file(args)
 
 	-- keybinds
 	local b = { buffer = bufnr, silent = true }
+	local pref = options.keybind_prefix
 	-- stylua: ignore start
-	vim.keymap.set("n", options.keybind_prefix .. "a",    function() M.run_cells("all") end,     b)
-	vim.keymap.set("n", options.keybind_prefix .. "r",    function() M.run_cells("current") end, b)
-	vim.keymap.set("n", options.keybind_prefix .. "x",    M.clear_output,                        b)
-	vim.keymap.set("n",                           "gx",   M.gx_handler,                          b)
-	vim.keymap.set("n",                           "<CR>", M.open_output_float,                   b)
+	vim.keymap.set("n", pref .. "a",    function() M.run_cells("all") end,      b)
+	vim.keymap.set("n", pref .. "r",    function() M.run_cells("current") end,  b)
+	vim.keymap.set("n", pref .. "p",    function() M.run_cells("previous") end, b)
+	vim.keymap.set("n", pref .. "x",    M.clear_output,                         b)
+	vim.keymap.set("n",         "gx",   M.gx_handler,                           b)
+	vim.keymap.set("n",         "<CR>", M.open_output_float,                    b)
 	-- stylua: ignore end
 
 	-- override :w with custom save
