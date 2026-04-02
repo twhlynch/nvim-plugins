@@ -7,6 +7,16 @@ local options = {
 	custom_plot_theme = true,
 	custom_theme_colors = { '#4878CF', '#6ACC65', '#D65F5F', '#B47CC7', '#C4AD66', '#77BEDB' },
 
+	keys = {
+		run_cell            = "r",
+		run_all_cells       = "a",
+		run_previous_cells  = "p",
+		clear_all_output    = "x",
+		refresh_all_output  = "R",
+		open_image          = "gx",
+		show_output         = "<CR>",
+	},
+
 	hl = {
 		output  = "NonText",
 		error   = "DiagnosticError",
@@ -876,14 +886,15 @@ function M.setup_file(args)
 	-- keybinds
 	local b = { buffer = bufnr, silent = true }
 	local pref = options.keybind_prefix
+	local keys = options.keys
 	-- stylua: ignore start
-	vim.keymap.set("n", pref .. "a",    function() M.run_cells("all") end,      b)
-	vim.keymap.set("n", pref .. "r",    function() M.run_cells("current") end,  b)
-	vim.keymap.set("n", pref .. "p",    function() M.run_cells("previous") end, b)
-	vim.keymap.set("n", pref .. "x",    M.clear_output,                         b)
-	vim.keymap.set("n", pref .. "R",    function() M.render(bufnr) end,         b)
-	vim.keymap.set("n",         "gx",   M.gx_handler,                           b)
-	vim.keymap.set("n",         "<CR>", M.open_output_float,                    b)
+	vim.keymap.set("n", pref .. keys.run_all_cells,      function() M.run_cells("all") end,      b)
+	vim.keymap.set("n", pref .. keys.run_cell,           function() M.run_cells("current") end,  b)
+	vim.keymap.set("n", pref .. keys.run_previous_cells, function() M.run_cells("previous") end, b)
+	vim.keymap.set("n", pref .. keys.clear_all_output,   M.clear_output,                         b)
+	vim.keymap.set("n", pref .. keys.refresh_all_output, function() M.render(bufnr) end,         b)
+	vim.keymap.set("n",         keys.open_image,         M.gx_handler,                           b)
+	vim.keymap.set("n",         keys.show_output,        M.open_output_float,                    b)
 	-- stylua: ignore end
 
 	-- override :w with custom save
