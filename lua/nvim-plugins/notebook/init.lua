@@ -154,10 +154,17 @@ function M.render_cell(i)
 		return
 	end
 
-	-- borders over """
+	-- borders over """ around markdown
 	if cell.type == "markdown" then
 		insert_separator(bufnr, cell.start_line - 1)
 		insert_separator(bufnr, cell.end_line + 1)
+	end
+	-- border above code
+	if cell.type == "code" then
+		local next_c = state.parsed_cells[i + 1]
+		if next_c and next_c.type == "code" then
+			insert_separator(bufnr, cell.end_line + 1)
+		end
 	end
 
 	-- everything else is just for code
@@ -704,10 +711,17 @@ function M.clear_output()
 			state.snacks_images[i] = {}
 		end
 
-		-- borders over """
+		-- borders over """ around markdown
 		if cell.type == "markdown" then
 			insert_separator(bufnr, cell.start_line - 1)
 			insert_separator(bufnr, cell.end_line + 1)
+		end
+		-- border above code
+		if cell.type == "code" then
+			local next_c = state.parsed_cells[i + 1]
+			if next_c and next_c.type == "code" then
+				insert_separator(bufnr, cell.end_line + 1)
+			end
 		end
 	end
 end
@@ -743,6 +757,9 @@ function M.parse_buffer(bufnr)
 		if line:match('^"""%s*$') then
 			emit(i - 2)
 			current_acc, start_idx, in_md = {}, i, not in_md
+		elseif line:match('^# """%s*$') and not in_md then
+			emit(i - 2)
+			current_acc, start_idx, in_md = {}, i, false
 		else
 			table.insert(current_acc, line)
 		end
@@ -843,11 +860,17 @@ function M.read_file(state)
 
 		-- surround markdown cells in docstrings and code in newlines
 		local delimeter = cell.cell_type == "markdown" and '"""' or ""
+
 		table.insert(notebook_lines, delimeter)
-		for _, l in ipairs(processed_source) do
-			table.insert(notebook_lines, l)
+		vim.list_extend(notebook_lines, processed_source)
+		table.insert(notebook_lines, delimeter)
+
+		if cell.cell_type == "code" then
+			local next_c = state.raw_json.cells[i + 1]
+			if next_c and next_c.cell_type == "code" then
+				table.insert(notebook_lines, '# """')
+			end
 		end
-		table.insert(notebook_lines, delimeter)
 
 		-- read existing cell output
 		state.output_store[i] = cell.outputs or {}
