@@ -884,11 +884,15 @@ function M.setup_file(args)
 	-- render events
 	local last_tick = vim.b.changedtick
 	vim.api.nvim_create_autocmd("InsertEnter", {
+		group = group,
+		buffer = bufnr,
 		callback = function()
 			last_tick = vim.b.changedtick
 		end,
 	})
 	vim.api.nvim_create_autocmd("InsertLeave", {
+		group = group,
+		buffer = bufnr,
 		callback = function()
 			if vim.b.changedtick ~= last_tick then
 				M.render(bufnr)
