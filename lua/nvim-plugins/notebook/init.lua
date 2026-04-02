@@ -699,12 +699,13 @@ function M.clear_output()
 	local bufnr = api.nvim_get_current_buf()
 	local state = M.get_state(bufnr)
 
+	-- ensure cells are correct
+	M.parse_buffer(bufnr)
+
 	-- clear extmarks
 	api.nvim_buf_clear_namespace(bufnr, ex_ns, 0, -1)
 
-	for i, _ in ipairs(state.output_store) do
-		local cell = state.parsed_cells[i]
-
+	for i, _ in ipairs(state.parsed_cells) do
 		-- clear output
 		state.output_store[i] = {}
 
@@ -715,20 +716,10 @@ function M.clear_output()
 			end
 			state.snacks_images[i] = {}
 		end
-
-		-- borders over """ around markdown
-		if cell.type == "markdown" then
-			insert_separator(bufnr, cell.start_line - 1)
-			insert_separator(bufnr, cell.end_line + 1)
-		end
-		-- border above code
-		if cell.type == "code" then
-			local next_c = state.parsed_cells[i + 1]
-			if next_c and next_c.type == "code" then
-				insert_separator(bufnr, cell.end_line + 1)
-			end
-		end
 	end
+
+	-- rerender
+	M.render(bufnr)
 end
 
 function M.jump_cell(next)
