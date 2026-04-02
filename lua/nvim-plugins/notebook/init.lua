@@ -50,6 +50,7 @@ function M.get_state(bufnr)
 			parsed_cells = {},
 			output_store = {},
 			snacks_images = {},
+			read_buffer = "",
 		}
 	end
 	return M.sessions[bufnr]
@@ -287,7 +288,19 @@ function M.stdout_callback(bufnr, data)
 
 	local state = M.get_state(bufnr)
 
-	for _, line in ipairs(data) do
+	local raw_data = table.concat(data, "\n")
+	state.read_buffer = state.read_buffer .. raw_data
+
+	while true do
+		local newline_pos = string.find(state.read_buffer, "\n")
+		if not newline_pos then
+			break
+		end
+
+		-- extract one potential JSON line
+		local line = string.sub(state.read_buffer, 1, newline_pos - 1)
+		state.read_buffer = string.sub(state.read_buffer, newline_pos + 1)
+
 		if line ~= "" then
 			local ok, msg = pcall(vim.json.decode, line)
 			if ok and msg.cell_idx then
@@ -320,7 +333,9 @@ function M.stdout_callback(bufnr, data)
 	end
 
 	vim.schedule(function()
-		M.render(bufnr)
+		if api.nvim_buf_is_valid(bufnr) then
+			M.render(bufnr)
+		end
 	end)
 end
 
