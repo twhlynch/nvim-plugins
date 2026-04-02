@@ -18,6 +18,7 @@ local options = {
 		output_border    = "┃   ",
 		cell_border      = "─",
 		cell_executed    = "[ ✓ Done ]",
+		cell_running     = "[ Running... ]",
 		truncated_output = "<Enter> %s more lines",
 		image_output     = "<gx> %s × image",
 
@@ -116,6 +117,7 @@ local function insert_virtual_line(tble, type, text)
 		error      = { { border, options.hl.error  }, { text,                                                  options.hl.error   } },
 		truncation = { { border, options.hl.output }, { string.format(options.strings.truncated_output, text), options.hl.hint    } },
 		image      = { { border, options.hl.output }, { string.format(options.strings.image_output, text),     options.hl.hint    } },
+		running    = { { border, options.hl.output }, { options.strings.cell_running,                          options.hl.hint    } },
 	}
 
 	table.insert(tble, line_table[type])
@@ -157,6 +159,11 @@ function M.render_cell(i)
 	local virt_lines = {}
 	local count = 0
 	local img_count = 0
+
+	-- show running if running
+	if cell_out.running then
+		insert_virtual_line(virt_lines, "running")
+	end
 
 	-- show success if it was executed
 	if cell_out.executed then
@@ -324,6 +331,7 @@ function M.stdout_callback(bufnr, data)
 					})
 				elseif msg.type == "status" and msg.content.execution_state == "idle" then
 					state.output_store[idx].executed = true
+					state.output_store[idx].running = false
 				end
 			end
 
@@ -535,7 +543,10 @@ function M.run_cells(mode)
 			-- execute
 			if code ~= "" then
 				-- reset executed state
-				state.output_store[i] = { executed = false }
+				state.output_store[i] = {
+					executed = false,
+					running = true,
+				}
 
 				-- send execution request as json
 				local req = vim.json.encode({ cell_idx = i, code = code })
