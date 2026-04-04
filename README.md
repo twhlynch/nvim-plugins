@@ -129,6 +129,7 @@ return {
 			max_output_lines = 10,
 			custom_plot_theme = true,
 			custom_theme_colors = { '#4878CF', '#6ACC65', '#D65F5F', '#B47CC7', '#C4AD66', '#77BEDB' },
+			cell_gap = 0,
 			debug = false,
 			keys = {
 				run_cell           = "r",
@@ -139,6 +140,7 @@ return {
 				previous_cell      = "[c",
 				insert_markdown    = "m",
 				insert_code        = "c",
+				split_cell         = "s",
 				remove_cell        = "X",
 				clear_all_output   = "x",
 				refresh_all_output = "R",
