@@ -4,12 +4,20 @@ local M = {}
 function M.strip_source(source)
 	local lines = vim.deepcopy(source)
 
+	if #lines == 0 then
+		return lines
+	end
+
 	while #lines > 0 and lines[1]:match("^%s*$") do
 		table.remove(lines, 1)
 	end
 
 	while #lines > 0 and lines[#lines]:match("^%s*$") do
 		table.remove(lines)
+	end
+
+	if #lines == 0 then
+		return { "" }
 	end
 
 	return lines
