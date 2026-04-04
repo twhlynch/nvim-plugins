@@ -31,6 +31,7 @@ end
 function M.render(state)
 	-- clear extmarks
 	vim.api.nvim_buf_clear_namespace(state.bufnr, M.output_ns, 0, -1)
+	vim.api.nvim_buf_clear_namespace(state.bufnr, M.border_ns, 0, -1)
 
 	-- render each cell
 	for i, _ in ipairs(state.parsed_cells) do
