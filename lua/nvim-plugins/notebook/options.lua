@@ -18,6 +18,7 @@ return {
 
 		insert_markdown    = "m",
 		insert_code        = "c",
+		split_cell         = "s",
 		remove_cell        = "X",
 
 		clear_all_output   = "x",

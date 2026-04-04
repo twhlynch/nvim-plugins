@@ -131,6 +131,79 @@ function M.remove_cell(state)
 	end
 end
 
+function M.split_cell(state)
+	M.parse_buffer(state)
+	local cells = state.parsed_cells
+
+	local idx = M.get_current_cell_index(state)
+	-- first line returns 0
+	if idx == 0 then
+		idx = 1
+	end
+	if not idx then
+		return
+	end
+
+	local cell = cells[idx]
+
+	-- cursor position relative to cell
+	local cursor_line = api.nvim_win_get_cursor(0)[1] - 1
+	local rel = cursor_line - cell.start_line
+
+	-- clamp
+	if rel < 0 then
+		rel = 0
+	end
+	if rel > #cell.source then
+		rel = #cell.source
+	end
+
+	-- split source
+	local top = {}
+	local bottom = {}
+
+	for i, line in ipairs(cell.source) do
+		if i <= rel then
+			table.insert(top, line)
+		else
+			table.insert(bottom, line)
+		end
+	end
+
+	-- add blank line to empty cells
+	if #top == 0 then
+		top = { "" }
+	end
+	if #bottom == 0 then
+		bottom = { "" }
+	end
+
+	-- replace current cell and insert new one
+	cells[idx].source = top
+
+	local new_cell = {
+		type = cell.type,
+		source = bottom,
+	}
+
+	table.insert(cells, idx + 1, new_cell)
+
+	-- sync output
+	table.insert(state.output_store, idx + 1, {})
+	state.snacks_images = state.snacks_images or {}
+	table.insert(state.snacks_images, idx + 1, {})
+
+	-- sync buffer
+	sync_buffer(state, cells)
+	M.rerender(state)
+
+	-- move cursor to new cell start
+	local new_parsed = state.parsed_cells[idx + 1]
+	if new_parsed then
+		api.nvim_win_set_cursor(0, { new_parsed.start_line + 1, 0 })
+	end
+end
+
 function M.open_output(state)
 	-- get cell containing cursor
 	local cell_idx = M.get_current_cell_index(state)
@@ -484,6 +557,7 @@ function M.setup_file(args)
 	vim.keymap.set("n", pref .. keys.insert_markdown,    function() M.insert_cell(state, "markdown") end, b) -- editing cells
 	vim.keymap.set("n", pref .. keys.insert_code,        function() M.insert_cell(state, "code") end,     b)
 	vim.keymap.set("n", pref .. keys.remove_cell,        function() M.remove_cell(state) end,             b)
+	vim.keymap.set("n", pref .. keys.split_cell,         function() M.split_cell(state) end,              b)
 	-- stylua: ignore end
 
 	-- override :w with custom save
