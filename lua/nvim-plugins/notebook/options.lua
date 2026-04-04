@@ -4,6 +4,7 @@ return {
 	max_output_lines = 10,
 	custom_plot_theme = true,
 	custom_theme_colors = { '#4878CF', '#6ACC65', '#D65F5F', '#B47CC7', '#C4AD66', '#77BEDB' },
+	cell_gap = 0,
 	debug = false,
 
 	keys = {

@@ -112,6 +112,38 @@ function M.render_cell(state, i)
 		end
 	end
 
+	-- gap between cells
+	if options.cell_gap and options.cell_gap > 0 then
+		local gap_lines = {}
+
+		-- gap location
+		local gap_line = cell.start_line - (cell.type == "markdown" and 1 or 0)
+
+		-- markdown with code before it adds a border under the code
+		if cell.type == "markdown" then
+			local next_c = state.parsed_cells[i - 1]
+			if next_c and next_c.type == "code" then
+				table.insert(gap_lines, { { border_text(), options.hl.output } })
+			end
+		end
+		-- actual gap
+		if gap_line ~= 0 then
+			for _ = 1, options.cell_gap do
+				table.insert(gap_lines, { { "", "" } })
+			end
+		end
+		-- extra border above code cells
+		if cell.type == "code" then
+			table.insert(gap_lines, { { border_text(), options.hl.output } })
+		end
+
+		-- insert
+		pcall(vim.api.nvim_buf_set_extmark, state.bufnr, M.border_ns, gap_line, 0, {
+			virt_lines_above = true,
+			virt_lines = gap_lines,
+		})
+	end
+
 	-- everything else is just for code
 	if cell.type ~= "code" then
 		return
