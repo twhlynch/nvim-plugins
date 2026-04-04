@@ -88,7 +88,6 @@ local function insert_separator(state, line, ns)
 	vim.api.nvim_buf_set_extmark(state.bufnr, ns, line, 0, {
 		virt_text = { { border_text(), options.hl.output } },
 		virt_text_pos = "overlay",
-		priority = 1,
 	})
 end
 
