@@ -220,15 +220,21 @@ function M.open_output(state)
 
 	-- collect output text content
 	local content = {}
+
+	-- terminal parser to push lines into content
+	local parser = U.create_terminal_parser(function(line)
+		table.insert(content, line)
+	end)
+
+	-- feed outputs into the parser
 	for _, out in ipairs(state.output_store[cell_idx]) do
 		local text = out.text or (out.data and out.data["text/plain"])
 		if text then
-			local lines = U.table_or_str_lines(text)
-			for _, line in ipairs(lines) do
-				table.insert(content, line)
-			end
+			parser.push(text)
 		end
 	end
+	-- flush remaining text
+	parser.flush()
 
 	-- check content length
 	if #content == 0 then

@@ -59,10 +59,6 @@ function M.clear_ouput(state)
 	end
 end
 
-local function strip_ansi(str)
-	return string.gsub(str, "\27%[[0-9;]*[a-zA-Z]", "")
-end
-
 local function insert_virtual_line(tble, type, text)
 	local border = options.strings.output_border
 	text = tostring(text) or ""
@@ -178,11 +174,22 @@ function M.render_cell(state, i)
 	local snacks_images = {}
 	local image_position = { cell.end_line + 1, 0 }
 
+	-- terminal parser state for text output
+	local parser = U.create_terminal_parser(function(line)
+		count = count + 1
+		if count <= options.max_output_lines then
+			insert_virtual_line(virt_lines, "output", line)
+		end
+	end)
+
 	for _, out in ipairs(cell_out) do
 		-- process images
 		local img_data = out.data and (out.data["image/png"] or out.data["image/jpeg"])
 		if img_data then
 			img_count = img_count + 1
+
+			-- flush text if an image interrupts
+			parser.flush()
 
 			if has_snacks then
 				local clean_data = img_data:gsub("%s+", "")
@@ -211,25 +218,23 @@ function M.render_cell(state, i)
 		-- render text output
 		local text = out.text or (out.data and out.data["text/plain"])
 		if text then
-			local lines = U.table_or_str_lines(text)
-			for _, line in ipairs(lines) do
-				count = count + 1
-				-- truncate
-				if count <= options.max_output_lines then
-					insert_virtual_line(virt_lines, "output", line)
-				end
-			end
+			parser.push(text)
 		end
 
 		-- render errors
 		if out.output_type == "error" or out.traceback then
+			parser.flush() -- flush any pending text above the error
+
 			local lines = U.table_or_str_lines(out.traceback, true)
 			for _, line in ipairs(lines) do
-				local clean = strip_ansi(line)
+				local clean = U.strip_ansi(line)
 				insert_virtual_line(virt_lines, "error", clean)
 			end
 		end
 	end
+
+	-- flush remaining text
+	parser.flush()
 
 	-- truncation
 	if count > options.max_output_lines then

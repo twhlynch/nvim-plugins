@@ -52,4 +52,47 @@ function M.table_or_str_lines(data, no_nl)
 	return split
 end
 
+local function strip_ansi(str)
+	return string.gsub(str, "\27%[[0-9;]*[a-zA-Z]", "")
+end
+
+function M.create_terminal_parser(on_line_ready)
+	local current_line = ""
+
+	return {
+		-- process a new chunk of text
+		push = function(text)
+			if type(text) == "table" then
+				text = table.concat(text, "")
+			end
+
+			-- simulate \r \b
+			local clean_text = strip_ansi(text):gsub("\r\n", "\n")
+			for i = 1, #clean_text do
+				local c = clean_text:sub(i, i)
+				if c == "\n" then
+					on_line_ready(current_line)
+					current_line = ""
+				elseif c == "\r" then
+					current_line = ""
+				elseif c == "\b" then
+					if #current_line > 0 then
+						current_line = current_line:sub(1, -2)
+					end
+				else
+					current_line = current_line .. c
+				end
+			end
+		end,
+
+		-- force output of any remaining text in the buffer
+		flush = function()
+			if current_line ~= "" then
+				on_line_ready(current_line)
+				current_line = ""
+			end
+		end,
+	}
+end
+
 return M
