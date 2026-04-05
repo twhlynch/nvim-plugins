@@ -52,7 +52,7 @@ function M.table_or_str_lines(data, no_nl)
 	return split
 end
 
-local function strip_ansi(str)
+function M.strip_ansi(str)
 	return string.gsub(str, "\27%[[0-9;]*[a-zA-Z]", "")
 end
 
@@ -67,7 +67,7 @@ function M.create_terminal_parser(on_line_ready)
 			end
 
 			-- simulate \r \b
-			local clean_text = strip_ansi(text):gsub("\r\n", "\n")
+			local clean_text = M.strip_ansi(text):gsub("\r\n", "\n")
 			for i = 1, #clean_text do
 				local c = clean_text:sub(i, i)
 				if c == "\n" then
