@@ -497,6 +497,11 @@ function M.read_file(state)
 	vim.bo[state.bufnr].buftype = ""
 	vim.bo[state.bufnr].modifiable = true
 
+	-- trick formatters & lsp into thinking this is a real python file
+	if vim.api.nvim_buf_get_name(state.bufnr) == "" then
+		vim.api.nvim_buf_set_name(state.bufnr, (state.path:gsub("%.ipynb$", ".py")))
+	end
+
 	M.rerender(state)
 end
 
