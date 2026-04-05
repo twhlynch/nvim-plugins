@@ -420,7 +420,7 @@ function M.save(state)
 		-- append cell info with content
 		table.insert(json_cells, {
 			cell_type = cell.type,
-			metadata = cell.metadata or {},
+			metadata = cell.metadata or vim.empty_dict(),
 			outputs = clean_outputs,
 			source = formatted_src,
 		})
@@ -434,9 +434,12 @@ function M.save(state)
 	if f then
 		local ok, encoded = pcall(vim.json.encode, state.raw_json)
 		if ok then
-			f:write(encoded)
-			f:close()
-			vim.bo[state.bufnr].modified = false
+			local f_ok, formatted = pcall(vim.fn.system, "jq --indent 1 --sort-keys .", encoded)
+			if f_ok then
+				f:write(formatted)
+				f:close()
+				vim.bo[state.bufnr].modified = false
+			end
 		end
 	end
 end
@@ -445,7 +448,7 @@ function M.read_file(state)
 	-- decode notebook data with fallback to empty template
 	local raw_lines = vim.fn.readfile(state.path)
 	local ok, decoded = pcall(vim.json.decode, table.concat(raw_lines, "\n"))
-	local blank_notebook = { cells = {}, metadata = {}, nbformat = 4, nbformat_minor = 5 }
+	local blank_notebook = { cells = {}, metadata = vim.empty_dict(), nbformat = 4, nbformat_minor = 5 }
 	state.raw_json = ok and decoded or blank_notebook
 
 	-- construct editable notebook content
