@@ -494,6 +494,8 @@ function M.read_file(state)
 	api.nvim_buf_set_lines(state.bufnr, 0, -1, false, notebook_lines)
 	vim.bo[state.bufnr].modified = false
 	vim.bo[state.bufnr].filetype = "python"
+	vim.bo[state.bufnr].buftype = ""
+	vim.bo[state.bufnr].modifiable = true
 
 	M.rerender(state)
 end
