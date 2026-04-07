@@ -1,0 +1,53 @@
+// comments should be removed
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			// should resolve: folder, input, ~
+			"label": "expansion",
+			"type": "shell",
+			"command": "echo",
+			"args": ["${workspaceFolder}", "${input:inputId}", "$HOME"],
+			"options": {
+				"env": {
+					"CUSTOM_VAR": "value"
+				}
+			}
+		},
+		{
+			// "a" 'b' c d
+			"label": "quotes",
+			"type": "shell",
+			"command": "echo",
+			"args": ["\"a\"", "'b'", "c d"]
+		},
+		{
+			// hello world
+			"label": "hello world",
+			"type": "shell",
+			"command": "echo \"hello world\""
+		},
+		{
+			// invalid since args exists and command has a space
+			"label": "broken",
+			"type": "shell",
+			"command": "echo arg",
+			"args": ["arg",], // trailing commas are removed
+		},
+		{
+			// prelaunch
+			"label": "prelaunch task",
+			"type": "shell",
+			"command": "echo",
+			"args": ["prelaunch"]
+		}
+	],
+	"inputs": [
+		{
+			"id": "inputId", // usable as ${input:inputId}
+			"type": "promptString",
+			"description": "Enter a value",
+			"default": "default"
+		}
+	]
+}

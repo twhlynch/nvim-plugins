@@ -1,0 +1,18 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			// arg launch.json value
+			"name": "echo test",
+			"type": "node",
+			"request": "launch",
+			"program": "echo",
+			"args": ["arg", "${fileBasename}", "$ENV_VAR"],
+			"preLaunchTask": "prelaunch task", // should call prelaunch task first
+			"cwd": "${workspaceFolder}",
+			"env": {
+				"ENV_VAR": "value"
+			}
+		}
+	]
+}
