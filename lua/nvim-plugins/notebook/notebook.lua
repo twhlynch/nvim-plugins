@@ -541,6 +541,40 @@ function M.rerender(state)
 	rendering.render(state)
 end
 
+function M.dump_images(state)
+	local choice = vim.fn.confirm(options.strings.images_prompt, "&No\n&Yes", 1)
+	if choice ~= 2 then
+		return
+	end
+
+	local cwd = vim.fn.getcwd()
+	local figure_count = 1
+
+	for _, cell_outputs in ipairs(state.output_store or {}) do
+		for _, out in ipairs(cell_outputs) do
+			local img_data = out.data and (out.data["image/png"] or out.data["image/jpeg"])
+			if img_data then
+				local ext = out.data["image/png"] and "png" or "jpg"
+				local dest_path = string.format("%s/figure_%d.%s", cwd, figure_count, ext)
+
+				-- TODO: move image saving to utils
+				local ok, decoded = pcall(vim.base64.decode, img_data:gsub("%s+", ""))
+				if ok and decoded then
+					local f = io.open(dest_path, "wb")
+					if f then
+						f:write(decoded)
+						f:close()
+					end
+				end
+
+				figure_count = figure_count + 1
+			end
+		end
+	end
+
+	vim.notify(vim.fn.printf(options.strings.saved_images, figure_count - 1))
+end
+
 function M.setup_file(args)
 	local bufnr = api.nvim_get_current_buf()
 	local state = sessions.get_state(bufnr)
@@ -574,6 +608,7 @@ function M.setup_file(args)
 	vim.keymap.set("n", pref .. keys.insert_code,        function() M.insert_cell(state, "code") end,     b)
 	vim.keymap.set("n", pref .. keys.remove_cell,        function() M.remove_cell(state) end,             b)
 	vim.keymap.set("n", pref .. keys.split_cell,         function() M.split_cell(state) end,              b)
+	vim.keymap.set("n", pref .. keys.dump_images,        function() M.dump_images(state) end,             b) -- utils
 	-- stylua: ignore end
 
 	-- override :w with custom save

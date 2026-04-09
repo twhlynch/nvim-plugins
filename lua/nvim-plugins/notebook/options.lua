@@ -26,6 +26,7 @@ return {
 
 		open_image         = "gx",
 		show_output        = "<CR>",
+		dump_images        = "D",
 	},
 
 	hl = {
@@ -53,5 +54,7 @@ return {
 		install_success = "Successfully installed",
 		install_fail    = "Failed to install",
 		no_venv         = "Not using a virtual environment",
+		saved_images    = "Saved %d images",
+		images_prompt   = "Dump images to working directory?",
 	},
 }
