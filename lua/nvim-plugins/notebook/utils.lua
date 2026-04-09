@@ -52,8 +52,23 @@ function M.table_or_str_lines(data, no_nl)
 	return split
 end
 
+function M.precompiled_ansi_stripper()
+	if not M.ansi_stripper then
+		local lpeg = vim.lpeg
+		local any = lpeg.P(1)
+		local ansi_sequence = lpeg.P("\27[") * lpeg.R("09", ";;") ^ 0 * lpeg.R("az", "AZ")
+		local stripper = lpeg.Cs((ansi_sequence / "" + any) ^ 0)
+		M.ansi_stripper = stripper
+	end
+
+	return M.ansi_stripper
+end
+
 function M.strip_ansi(str)
-	return string.gsub(str, "\27%[[0-9;]*[a-zA-Z]", "")
+	if not str or str == "" then
+		return str
+	end
+	return M.precompiled_ansi_stripper():match(str)
 end
 
 function M.create_terminal_parser(on_line_ready)
@@ -93,6 +108,13 @@ function M.create_terminal_parser(on_line_ready)
 			end
 		end,
 	}
+end
+
+---@diagnostic disable-next-line: undefined-field
+local render_timer = vim.loop.new_timer()
+function M.debounce(func)
+	render_timer:stop()
+	render_timer:start(50, 0, vim.schedule_wrap(func))
 end
 
 return M
