@@ -19,6 +19,7 @@
 | breadcrumbs         | Highlight line numbers with cursor activity                       |                                        |
 | inlay               | Inject inlay hints into the buffer                                | Based on Davidyz/inlayhint-filler.nvim |
 | notebook            | Edit and run jupyter notebooks                                    |                                        |
+| tasks               | Run VSCode tasks & launch configs                                 |                                        |
 
 ## Default config
 
@@ -168,8 +169,15 @@ return {
 				installing      = "Installing jupyter_client...",
 				install_success = "Successfully installed",
 				install_fail    = "Failed to install",
+				no_venv         = "Not using a virtual environment",
 			},
-		}
+		},
+		tasks = {
+			enabled = false,
+			keybind = "<leader><CR>",
+			sign_icon = "▶",
+			sign_hl = "DiagnosticFloatingOk",
+		},
 	},
 	keys = {
 		---@diagnostic disable: undefined-global
