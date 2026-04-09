@@ -70,9 +70,8 @@ function M.stderr_callback(_, data)
 end
 
 function M.prompt_install(python)
-	local choice = vim.fn.confirm(options.strings.install_prompt, "&Yes\n&No", 1)
-
-	if choice == 0 then
+	local choice = vim.fn.confirm(options.strings.install_prompt, "&No\n&Yes", 1)
+	if choice ~= 2 then
 		vim.notify(options.strings.no_client, vim.log.levels.WARN)
 		return
 	end
