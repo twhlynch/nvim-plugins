@@ -52,5 +52,6 @@ return {
 		installing      = "Installing jupyter_client...",
 		install_success = "Successfully installed",
 		install_fail    = "Failed to install",
+		no_venv         = "Not using a virtual environment",
 	},
 }

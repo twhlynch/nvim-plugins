@@ -103,6 +103,13 @@ function M.start_repl(state)
 		end
 	end
 
+	if cmd == "python3" then
+		local path = vim.fn.system({ "which", cmd })
+		if not (path:match("%.venv")) then
+			vim.notify(options.strings.no_venv, vim.log.levels.WARN)
+		end
+	end
+
 	-- autoinstall jupyter_client
 	vim.fn.system({ cmd, "-c", "import jupyter_client" })
 	if vim.v.shell_error ~= 0 then
