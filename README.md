@@ -4,7 +4,7 @@
 | ------------------- | ----------------------------------------------------------------- | -------------------------------------- |
 | blame               | Viewing Git blame of all lines in a buffer                        | Based on VSCode                        |
 | copy lspconfig      | Quickly copy lspconfig configs into nvims config                  |                                        |
-| fff                 | Snacks Picker wrapper on fff.nvim                                 | By madmaxieee                          |
+| fff                 | Snacks Picker wrapper on fff.nvim                                 | Based on code from madmaxieee          |
 | oil git             | Show git status in oil buffer                                     | Rewrite of benomahony/oil-git.nvim     |
 | origami             | Use h and l to open close folds                                   | From chrisgrieser/nvim-origami         |
 | pear                | Super simple file pair jumping                                    | From sylvianfranklin/pear              |

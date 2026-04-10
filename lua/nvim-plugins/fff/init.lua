@@ -1,4 +1,4 @@
--- https://github.com/madmaxieee/nvim-config/blob/c773485d76cf1fff4be3eca888a6ed4525cc9065/lua/plugins/fuzzy-finder/snacks-picker/fff.lua
+-- based on https://github.com/madmaxieee/nvim-config/blob/c773485d76cf1fff4be3eca888a6ed4525cc9065/lua/plugins/fuzzy-finder/snacks-picker/fff.lua
 local M = {}
 
 local staged_status = {
@@ -17,8 +17,6 @@ local status_map = {
 	staged_modified = "modified",
 	staged_deleted = "deleted",
 	ignored = "ignored",
-	-- clean = "",
-	-- clear = "",
 	unknown = "untracked",
 }
 
@@ -26,40 +24,41 @@ local status_map = {
 ---@field current_file_cache? string
 M.state = {}
 
+local function get_current_file()
+	local buf = vim.api.nvim_get_current_buf()
+	if buf and vim.api.nvim_buf_is_valid(buf) then
+		local name = vim.api.nvim_buf_get_name(buf)
+		if name ~= "" and vim.fn.filereadable(name) == 1 then
+			return name
+		end
+	end
+	return nil
+end
+
 ---@type snacks.picker.finder
----@diagnostic disable-next-line: unused-local
-local function finder(opts, ctx)
+local function finder(_, ctx)
 	local file_picker = require("fff.file_picker")
 
 	if not M.state.current_file_cache then
-		local current_buf = vim.api.nvim_get_current_buf()
-		if current_buf and vim.api.nvim_buf_is_valid(current_buf) then
-			local current_file = vim.api.nvim_buf_get_name(current_buf)
-			if current_file ~= "" and vim.fn.filereadable(current_file) == 1 then
-				M.state.current_file_cache = current_file
-			else
-				M.state.current_file_cache = nil
-			end
-		end
+		M.state.current_file_cache = get_current_file()
 	end
 
-	local fff_result = file_picker.search_files(ctx.filter.search, 100, 4, M.state.current_file_cache, false)
+	local fff_result = file_picker.search_files(ctx.filter.search or "", M.state.current_file_cache, 100, 4, nil)
 
 	---@type snacks.picker.finder.Item[]
 	local items = {}
 	for _, fff_item in ipairs(fff_result) do
-		---@type snacks.picker.finder.Item
-		local item = {
+		local git_status = fff_item.git_status
+		items[#items + 1] = {
 			text = fff_item.name,
 			file = fff_item.path,
 			score = fff_item.total_frecency_score,
-			status = status_map[fff_item.git_status] and {
-				status = status_map[fff_item.git_status],
-				staged = staged_status[fff_item.git_status] or false,
-				unmerged = fff_item.git_status == "unmerged",
-			},
+			status = status_map[git_status] and {
+				status = status_map[git_status],
+				staged = staged_status[git_status] or false,
+				unmerged = git_status == "unmerged",
+			} or nil,
 		}
-		items[#items + 1] = item
 	end
 
 	return items
@@ -72,8 +71,8 @@ end
 local function format_file_git_status(item, picker)
 	local ret = {} ---@type snacks.picker.Highlight[]
 	local status = item.status
+	local hl
 
-	local hl = "SnacksPickerGitStatus"
 	if status.unmerged then
 		hl = "SnacksPickerGitStatusUnmerged"
 	elseif status.staged then
@@ -82,13 +81,8 @@ local function format_file_git_status(item, picker)
 		hl = "SnacksPickerGitStatus" .. status.status:sub(1, 1):upper() .. status.status:sub(2)
 	end
 
-	local icon = picker.opts.icons.git[status.status]
-	if status.staged then
-		icon = picker.opts.icons.git.staged
-	end
-
-	local text_icon = status.status:sub(1, 1):upper()
-	text_icon = status.status == "untracked" and "?" or status.status == "ignored" and "!" or text_icon
+	local icon = (status.staged and picker.opts.icons.git.staged) or picker.opts.icons.git[status.status] or " "
+	local text_icon = status.status == "untracked" and "?" or status.status == "ignored" and "!" or status.status:sub(1, 1):upper()
 
 	ret[#ret + 1] = { icon, hl }
 	ret[#ret + 1] = { " ", virtual = true }
@@ -128,20 +122,28 @@ end
 
 function M.fff()
 	local file_picker = require("fff.file_picker")
+
+	M.state.current_file_cache = get_current_file()
+
 	if not file_picker.is_initialized() then
-		local setup_success = file_picker.setup()
-		if not setup_success then
-			vim.notify("Failed to initialize file picker", vim.log.levels.ERROR)
+		local ok = file_picker.setup()
+		if not ok then
+			vim.notify("fff: failed to initialize file picker", vim.log.levels.ERROR)
+			return
 		end
-		-- refresh to show results on first open
-		file_picker.search_files("", 100, 4, M.state.current_file_cache, false)
 	end
+
+	file_picker.search_files("", M.state.current_file_cache, 100, 4, nil)
+
 	Snacks.picker({
 		title = "FFFiles",
 		finder = finder,
 		on_close = on_close,
 		format = format,
 		live = true,
+		on_show = function(picker)
+			picker:find()
+		end,
 	})
 end
 
