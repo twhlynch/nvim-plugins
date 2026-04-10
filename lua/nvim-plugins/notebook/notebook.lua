@@ -261,7 +261,7 @@ function M.open_output(state)
 	})
 
 	-- q or esc to quit
-	local opt = { buffer = fbuf, silent = true }
+	local opt = { buf = fbuf, silent = true }
 	vim.keymap.set("n", "q", "<cmd>close<CR>", opt)
 	vim.keymap.set("n", "<ESC>", "<cmd>close<CR>", opt)
 end
@@ -589,7 +589,7 @@ function M.setup_file(args)
 	M.read_file(state)
 
 	-- keybinds
-	local b = { buffer = bufnr, silent = true }
+	local b = { buf = bufnr, silent = true }
 	local pref = options.keybind_prefix
 	local keys = options.keys
 

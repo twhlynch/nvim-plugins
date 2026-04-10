@@ -161,7 +161,7 @@ function M.attach(bufnr)
 	-- attach keymap
 	vim.keymap.set("n", options.keybind, function()
 		M.run(bufnr)
-	end, { buffer = bufnr, desc = consts.strings.keybind_desc })
+	end, { buf = bufnr, desc = consts.strings.keybind_desc })
 end
 
 ---run a config in a buffer

@@ -61,8 +61,8 @@ end
 
 ---@diagnostic disable-next-line: unused-local
 function M.attach(client, bufnr)
-	vim.keymap.set("n", options.key, M.insert_ignore_clang_warning, { buffer = bufnr, desc = "Insert diagnostic silence comments" })
-	vim.keymap.set("x", options.key, M.insert_ignore_clang_warnings, { buffer = bufnr, desc = "Insert diagnostic silence comments" })
+	vim.keymap.set("n", options.key, M.insert_ignore_clang_warning, { buf = bufnr, desc = "Insert diagnostic silence comments" })
+	vim.keymap.set("x", options.key, M.insert_ignore_clang_warnings, { buf = bufnr, desc = "Insert diagnostic silence comments" })
 end
 
 function M.setup(opts)
