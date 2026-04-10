@@ -18,7 +18,7 @@ local function highlight_unformatted_lines(bufnr, before, after)
 		after_text = after_text .. "\n"
 	end
 
-	local hunks = vim.diff(before_text, after_text, { result_type = "indices" })
+	local hunks = vim.text.diff(before_text, after_text, { result_type = "indices" })
 	if not hunks or #hunks == 0 then
 		return false
 	end
