@@ -20,6 +20,8 @@
 | inlay               | Inject inlay hints into the buffer                                | Based on Davidyz/inlayhint-filler.nvim |
 | notebook            | Edit and run jupyter notebooks                                    |                                        |
 | tasks               | Run VSCode tasks & launch configs                                 |                                        |
+| auto commit         | Silly plugin that commits after every change                      |                                        |
+| elk                 | Diagnostics provider for LC-3                                     | dxrcy/elk                              |
 
 ## Default config
 
@@ -178,6 +180,19 @@ return {
 			sign_icon = "▶",
 			sign_hl = "DiagnosticFloatingOk",
 		},
+		auto_commit = {
+			enabled = false,
+			keymap = "<leader>commit",
+			message = function()
+				return "auto: " .. os.date("%H:%M:%S")
+			end,
+		},
+		elk = {
+			enabled = false,
+			binary = "elk",
+			debounce = 400,
+			filetypes = { "asm" },
+		}
 	},
 	keys = {
 		---@diagnostic disable: undefined-global
