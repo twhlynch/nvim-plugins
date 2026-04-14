@@ -423,6 +423,8 @@ function M.save(state)
 			metadata = cell.metadata or vim.empty_dict(),
 			outputs = clean_outputs,
 			source = formatted_src,
+			execution_count = vim.NIL,
+			id = tostring(i - 1),
 		})
 	end
 
@@ -448,7 +450,16 @@ function M.read_file(state)
 	-- decode notebook data with fallback to empty template
 	local raw_lines = vim.fn.readfile(state.path)
 	local ok, decoded = pcall(vim.json.decode, table.concat(raw_lines, "\n"))
-	local blank_notebook = { cells = {}, metadata = vim.empty_dict(), nbformat = 4, nbformat_minor = 5 }
+	local blank_notebook = { cells = {}, metadata = {
+		kernelspec = {
+			display_name = ".venv",
+			language = "python",
+			name = "python3",
+		},
+		language_info = {
+			name = "python",
+		},
+	}, nbformat = 4, nbformat_minor = 5 }
 	state.raw_json = ok and decoded or blank_notebook
 
 	-- construct editable notebook content
