@@ -597,26 +597,31 @@ function M.setup_file(args)
 	M.read_file(state)
 
 	-- keybinds
-	local b = { buf = bufnr, silent = true }
-	local pref = options.keybind_prefix
-	local keys = options.keys
+	local keymap = function(leader, name, func, ...)
+		local vargs = { ... }
+		local key = options.keys[name]
+		local desc = options.strings[name .. "_desc"]
+		vim.keymap.set("n", (leader and options.keybind_prefix or "") .. key, function()
+			func(state, unpack(vargs))
+		end, { buf = bufnr, silent = true, desc = desc })
+	end
 
 	-- stylua: ignore start
-	vim.keymap.set("n", pref .. keys.run_cell,           function() M.run_cells(state, "current") end,    b) -- running
-	vim.keymap.set("n", pref .. keys.run_cells_all,      function() M.run_cells(state, "all") end,        b)
-	vim.keymap.set("n", pref .. keys.run_cells_up,       function() M.run_cells(state, "up") end,         b)
-	vim.keymap.set("n", pref .. keys.run_cells_down,     function() M.run_cells(state, "down") end,       b)
-	vim.keymap.set("n", pref .. keys.clear_all_output,   function() M.clear_output(state) end,            b) -- output
-	vim.keymap.set("n", pref .. keys.refresh_all_output, function() M.rerender(state) end,                b)
-	vim.keymap.set("n",         keys.open_image,         function() M.gx_handler(state) end,              b) -- viewing
-	vim.keymap.set("n",         keys.show_output,        function() M.open_output(state) end,             b)
-	vim.keymap.set("n",         keys.next_cell,          function() M.jump_cell(state, true) end,         b) -- navigation
-	vim.keymap.set("n",         keys.previous_cell,      function() M.jump_cell(state, false) end,        b)
-	vim.keymap.set("n", pref .. keys.insert_markdown,    function() M.insert_cell(state, "markdown") end, b) -- editing cells
-	vim.keymap.set("n", pref .. keys.insert_code,        function() M.insert_cell(state, "code") end,     b)
-	vim.keymap.set("n", pref .. keys.remove_cell,        function() M.remove_cell(state) end,             b)
-	vim.keymap.set("n", pref .. keys.split_cell,         function() M.split_cell(state) end,              b)
-	vim.keymap.set("n", pref .. keys.dump_images,        function() M.dump_images(state) end,             b) -- utils
+	keymap(true,  "run_cell",           M.run_cells, "current"    ) -- running
+	keymap(true,  "run_cells_all",      M.run_cells, "all"        )
+	keymap(true,  "run_cells_up",       M.run_cells, "up"         )
+	keymap(true,  "run_cells_down",     M.run_cells, "down"       )
+	keymap(true,  "clear_all_output",   M.clear_output            ) -- output
+	keymap(true,  "refresh_all_output", M.rerender                )
+	keymap(false, "open_image",         M.gx_handler              ) -- viewing
+	keymap(false, "show_output",        M.open_output             )
+	keymap(false, "next_cell",          M.jump_cell, true         ) -- navigation
+	keymap(false, "previous_cell",      M.jump_cell, false        )
+	keymap(true,  "insert_markdown",    M.insert_cell, "markdown" ) -- editing cells
+	keymap(true,  "insert_code",        M.insert_cell, "code"     )
+	keymap(true,  "remove_cell",        M.remove_cell             )
+	keymap(true,  "split_cell",         M.split_cell              )
+	keymap(true,  "dump_images",        M.dump_images             ) -- utils
 	-- stylua: ignore end
 
 	-- override :w with custom save
