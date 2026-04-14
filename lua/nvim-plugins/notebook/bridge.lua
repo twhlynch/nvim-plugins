@@ -110,7 +110,7 @@ function M.start_repl(state)
 	end
 
 	-- autoinstall jupyter_client
-	vim.fn.system({ cmd, "-c", "import jupyter_client" })
+	vim.fn.system({ cmd, "-c", "import jupyter_client, ipykernel" })
 	if vim.v.shell_error ~= 0 then
 		M.prompt_install(cmd)
 		return false
