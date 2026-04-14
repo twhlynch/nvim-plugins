@@ -548,6 +548,14 @@ function M.dump_images(state)
 	end
 
 	local cwd = vim.fn.getcwd()
+
+	-- ensure /figures exists
+	local directory = cwd .. "/figures"
+	if vim.fn.isdirectory(directory) == 0 then
+		vim.fn.mkdir(directory)
+	end
+
+	-- save images
 	local figure_count = 1
 
 	for _, cell_outputs in ipairs(state.output_store or {}) do
@@ -555,7 +563,7 @@ function M.dump_images(state)
 			local img_data = out.data and (out.data["image/png"] or out.data["image/jpeg"])
 			if img_data then
 				local ext = out.data["image/png"] and "png" or "jpg"
-				local dest_path = string.format("%s/figure_%d.%s", cwd, figure_count, ext)
+				local dest_path = string.format("%s/figure_%d.%s", directory, figure_count, ext)
 
 				-- TODO: move image saving to utils
 				local ok, decoded = pcall(vim.base64.decode, img_data:gsub("%s+", ""))
