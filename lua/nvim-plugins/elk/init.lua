@@ -9,6 +9,7 @@ local options = {
 -- parse elk --quiet output
 -- <severity>: <message> (Line <N>)
 local function parse(output)
+	--- @type vim.Diagnostic.Set[]
 	local diagnostics = {}
 
 	-- strip ansi
@@ -17,13 +18,15 @@ local function parse(output)
 	-- for each line
 	for line in clean:gmatch("[^\n]+") do
 		-- extract parts
-		local sev_word, msg, lnum = line:match("^(%a+):%s+(.-)%s+%(Line%s+(%d+)%)")
+		local sev_word, msg, ls, cs, le, ce = line:match("^(%a+):%s+(.-)%s+%(Line (%d+):(%d+)-(%d+):(%d+)%)")
 		local severity = sev_word and M.severity_map[sev_word]
 		-- insert diagnostic
-		if severity and lnum then
+		if severity and ls and cs and le and ce then
 			table.insert(diagnostics, {
-				lnum = tonumber(lnum) - 1,
-				col = 0,
+				lnum = tonumber(ls) - 1,
+				col = tonumber(cs) - 1,
+				end_lnum = tonumber(le) - 1,
+				end_col = tonumber(ce) - 1,
 				severity = severity,
 				message = msg,
 				source = "elk",
