@@ -9,12 +9,28 @@ local utils = require("nvim-plugins.tasks.utils")
 ---@param env env
 ---@return command | nil
 function M.build_cmd(config, inputs, env)
-	if not config.command then
-		vim.notify(consts.strings.missing_command, vim.log.levels.ERROR)
-		return nil
+	local command, args = nil, nil
+
+	if config.type == "npm" then
+		if not config.script then
+			vim.notify(consts.strings.missing_script, vim.log.levels.ERROR)
+			return nil
+		end
+		command = "npm"
+		args = vim.list_extend({ "run", config.script }, config.args or {})
+	elseif config.type == "shell" or config.type == "process" then
+		if not config.command then
+			vim.notify(consts.strings.missing_command, vim.log.levels.ERROR)
+			return nil
+		end
+		command = config.command
+		args = config.args
 	end
 
-	local cmd = utils.build_cmd(config.command, config.args, inputs, env)
+	if not command then
+		return nil
+	end
+	local cmd = utils.build_cmd(command, args, inputs, env)
 	return cmd
 end
 

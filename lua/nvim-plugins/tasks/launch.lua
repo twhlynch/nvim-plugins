@@ -4,19 +4,44 @@ local consts = require("nvim-plugins.tasks.consts")
 local tasks = require("nvim-plugins.tasks.tasks")
 local utils = require("nvim-plugins.tasks.utils")
 
+---find the default build task from the project tasks cache
+---@param project_tasks table<string, TaskConfig>
+---@return string | nil
+local function resolve_default_build_task(project_tasks)
+	for label, task in pairs(project_tasks) do
+		if
+			task.group -- fmt
+			and type(task.group) == "table"
+			and task.group.kind == "build"
+			and task.group.isDefault == true
+		then
+			return label
+		end
+	end
+	return nil
+end
+
 ---build command for a launch config
 ---@param config LaunchConfig
 ---@param inputs table<string, UserInput>
 ---@param env env
 ---@return command | nil
 function M.build_cmd(config, inputs, env)
-	local exec = config.runtimeExecutable or config.program
-	if not exec then
-		vim.notify(consts.strings.missing_program, vim.log.levels.ERROR)
-		return nil
+	local exec, args
+
+	if config.type == "extensionHost" then
+		exec = config.runtimeExecutable or "code"
+	else
+		exec = config.runtimeExecutable or config.program
+		if not exec then
+			vim.notify(consts.strings.missing_program, vim.log.levels.ERROR)
+			return nil
+		end
 	end
 
-	local cmd = utils.build_cmd(exec, config.args, inputs, env)
+	args = config.args
+
+	local cmd = utils.build_cmd(exec, args, inputs, env)
 	return cmd
 end
 
@@ -31,7 +56,18 @@ function M.run(config, global_state)
 
 	-- queue preLaunchTask entry
 	if config.preLaunchTask then
-		local pre_task = global_state.project_tasks[config.preLaunchTask]
+		local task_label = config.preLaunchTask
+
+		-- resolve the special ${defaultBuildTask} variable
+		if task_label == "${defaultBuildTask}" then
+			task_label = resolve_default_build_task(global_state.project_tasks)
+			if not task_label then
+				vim.notify(consts.strings.no_default_build_task, vim.log.levels.WARN)
+				return
+			end
+		end
+
+		local pre_task = global_state.project_tasks[task_label]
 		if pre_task then
 			local pre_cmd = tasks.build_cmd(pre_task, global_state.project_inputs, env)
 			if pre_cmd then

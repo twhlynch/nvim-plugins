@@ -24,10 +24,16 @@
 
 ---@class TaskConfig vscode task
 ---@field label? string unique name for a task
----@field type? "shell" | "process" is the task a shell command or a process
+---@field type? "shell" | "process" | "npm" is the task a shell command or a process or other
 ---@field command? string command to run
 ---@field args? string[] args to pass to the command
 ---@field options? TaskOptions extra task options
+---@field group? string | Group group info
+---@field script? string script for npm tasks
+
+---@class Group task group info
+---@field kind string group name
+---@field isDefault boolean if the task is the default for the group
 
 ---@class UserInput vscode task input
 ---@field id? string unique id for input
@@ -37,7 +43,7 @@
 
 ---@class LaunchConfig vscode launch config
 ---@field name? string unique name for launch config
----@field type? "node" | "python" | "debugpy" | "cppdbg" type of config
+---@field type? "node" | "python" | "debugpy" | "cppdbg" | "extensionHost" type of config
 ---@field request? "launch" | "attach" request type of config
 ---@field program? string absolute path to the program
 ---@field runtimeExecutable? string absolute path to the program

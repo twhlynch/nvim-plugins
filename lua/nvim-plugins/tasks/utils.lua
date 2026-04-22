@@ -37,8 +37,12 @@ end
 ---@param str string
 ---@param inputs table<string, UserInput>
 ---@param env env
----@return string
+---@return string | nil
 function M.resolve_vars(str, inputs, env)
+	if not str then
+		return nil
+	end
+
 	 -- stylua: ignore
 	local replacements = {
 		["${workspaceFolder}"] =         vim.fn.getcwd(),
