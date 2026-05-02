@@ -20,6 +20,7 @@
 | inlay               | Inject inlay hints into the buffer                                | Based on Davidyz/inlayhint-filler.nvim |
 | tasks               | Run VSCode tasks & launch configs                                 |                                        |
 | auto commit         | Silly plugin that commits after every change                      |                                        |
+| templates           | Default content for new files by name and extension               |                                        |
 | notebook            | [moved](https://github.com/twhlynch/notebook.nvim)                |                                        |
 | elk                 | [moved](https://github.com/twhlynch/elk.nvim)                     |                                        |
 
@@ -138,6 +139,10 @@ return {
 			message = function()
 				return "auto: " .. os.date("%H:%M:%S")
 			end,
+		},
+		templates = {
+			enabled = false,
+			templates_dir = vim.fn.stdpath("config") .. "/templates",
 		},
 	},
 	keys = {
