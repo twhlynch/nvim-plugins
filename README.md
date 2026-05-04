@@ -59,6 +59,15 @@ return {
 				"MARK: ",
 				"#region ",
 			},
+			divider = {
+				enabled = true,
+				hl_group = "RegionDivider",
+				char = "─",
+			},
+			keys = {
+				next = "]r",
+				prev = "[r",
+			},
 		},
 		reminder = {
 			enabled = false,
@@ -152,8 +161,6 @@ return {
 		{ "l", function() Plugins.origami.l() end, desc = "Origami l", },
 		{ "<leader>jp", function() Plugins.pear.jump_pair() end, desc = "Jump file pair", },
 		{ "<leader>K", function() Plugins.reviews.get_current_line_comments() end, desc = "Show line PR Review Comments", },
-		{ "]r", function() Plugins.regions.goto_next_region() end, desc = "Next region", },
-		{ "[r", function() Plugins.regions.goto_prev_region() end, desc = "Previous region", },
 		{ "<leader>bf", function() Plugins.blame.show_blame() end, desc = "Show file blame", },
 		{ "<leader>i", function() Plugins.reminder.ignore_buffer() end, desc = "Toggle ignoring format reminder for buffer", },
 		{ "<leader>I", function() Plugins.reminder.toggle() end, desc = "Toggle format reminder", },
