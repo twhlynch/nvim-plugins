@@ -1,5 +1,6 @@
 local M = {}
 
+--- @class Regions.Options
 local options = {
 	region_markers = {
 		"MARK: ",
@@ -16,14 +17,71 @@ local options = {
 	},
 }
 
--- bufnr -> { changedtick, regions[], ns }
-M.state = {}
+--- @class Regions.Region
+---	@field line integer line number
+--- @field text string mark text for scrollbar
+--- @field type string scrollbar type
+--- @field level integer scrollbar level
+--- @field priority integer scrollbar priority
 
-function M.redraw_extmarks(bufnr, regions)
+--- @type table<integer, Regions.Region[]>
+M.regions = {}
+
+-- MARK: internals
+
+--- @param bufnr integer
+function M.parse_regions(bufnr)
+	local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+
+	M.regions[bufnr] = {}
+
+	for i, line in ipairs(lines) do
+		for _, pattern in ipairs(options.region_markers) do
+			local loc = line:find(pattern, 1, true)
+
+			if loc then
+				local text = vim.trim(line:sub(loc + #pattern))
+
+				if text ~= "-" then
+					table.insert(M.regions[bufnr], {
+						line = i - 1,
+						text = text .. "─",
+						type = "Info",
+						level = 1,
+						priority = 1,
+					})
+				end
+
+				break
+			end
+		end
+	end
+end
+
+--- @param bufnr integer
+function M.get_regions(bufnr)
+	if not M.regions[bufnr] then
+		M.parse_regions(bufnr)
+	end
+
+	return M.regions[bufnr]
+end
+
+--- @param bufnr integer
+function M.clear_regions(bufnr)
+	M.regions[bufnr] = nil
+end
+
+-- MARK: rendering
+
+--- @param bufnr integer
+function M.redraw_extmarks(bufnr)
 	if not options.divider.enabled then
 		return
 	end
 	vim.api.nvim_buf_clear_namespace(bufnr, M.ns, 0, -1)
+
+	local regions = M.get_regions(bufnr)
 
 	local line_count = vim.api.nvim_buf_line_count(bufnr)
 
@@ -31,119 +89,90 @@ function M.redraw_extmarks(bufnr, regions)
 		local row = region.line
 		if row < line_count then
 			vim.api.nvim_buf_set_extmark(bufnr, M.ns, row, 0, {
-				--- 999 width will be cutoff by the window effectively being the full width
-				virt_text = { { options.divider.char:rep(999), options.divider.hl_group } },
+				virt_text = { {
+					options.divider.char:rep(999),
+					options.divider.hl_group,
+				} },
 				virt_text_pos = "eol",
 			})
 		end
 	end
 end
 
-function M.get_regions(bufnr)
-	bufnr = bufnr or vim.api.nvim_get_current_buf()
-	local changedtick = vim.api.nvim_buf_get_changedtick(bufnr)
+-- MARK: interaction
 
-	local state = M.state[bufnr]
-	if state and state.changedtick == changedtick then
-		return state.regions
-	end
+--- @param direction 1 | -1
+function M.jump_region(direction)
+	local line = vim.api.nvim_win_get_cursor(0)[1] - 1
+	local regions = M.get_regions(vim.api.nvim_get_current_buf())
 
-	local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-	local regions = {}
+	local target
 
-	for i, line in ipairs(lines) do
-		local is_region = false
-		local mark_text = ""
+	for i = 1, #regions do
+		local r = regions[i]
 
-		for _, pattern in ipairs(options.region_markers) do
-			local loc = line:find(pattern, 1, true)
-			if loc ~= nil then
-				is_region = true
-				mark_text = vim.trim(line:sub(loc + #pattern))
-				break
-			end
-		end
-
-		if is_region and mark_text ~= "-" then
-			table.insert(regions, {
-				line = i - 1,
-				text = mark_text .. "─",
-				type = "Info",
-				level = 1,
-				priority = 1,
-			})
+		if direction == 1 and r.line > line then
+			target = r.line
+			break
+		elseif direction == -1 and r.line < line then
+			target = r.line
 		end
 	end
 
-	M.state[bufnr] = { changedtick = changedtick, regions = regions }
-
-	M.redraw_extmarks(bufnr, regions)
-
-	return regions
-end
-
-function M.goto_next_region()
-	local bufnr = vim.api.nvim_get_current_buf()
-	local regions = M.get_regions(bufnr)
-	local current_line = vim.api.nvim_win_get_cursor(0)[1] - 1
-	for _, region in ipairs(regions) do
-		if region.line > current_line then
-			vim.api.nvim_win_set_cursor(0, { region.line + 1, 0 })
-			return
-		end
+	if target then
+		vim.api.nvim_win_set_cursor(0, { target + 1, 0 })
 	end
 end
 
-function M.goto_prev_region()
-	local bufnr = vim.api.nvim_get_current_buf()
-	local regions = M.get_regions(bufnr)
-	local current_line = vim.api.nvim_win_get_cursor(0)[1] - 1
-	for i = #regions, 1, -1 do
-		if regions[i].line < current_line then
-			vim.api.nvim_win_set_cursor(0, { regions[i].line + 1, 0 })
-			return
-		end
-	end
-end
+-- MARK: setup
 
+--- @param opts Regions.Options
 function M.setup(opts)
-	options = vim.tbl_deep_extend("keep", opts or {}, options)
+	options = vim.tbl_deep_extend("force", options, opts or {})
 
-	-- hl group
-	vim.api.nvim_set_hl(0, "RegionDivider", { link = "Comment", default = true })
+	-- highlights
+	M.ns = vim.api.nvim_create_namespace("RegionDividers")
 
-	-- scrollbar integration
-	require("scrollbar.handlers").register("Regions", function(bufnr)
-		return M.get_regions(bufnr)
-	end)
-
-	-- namespace
-	M.ns = M.ns or vim.api.nvim_create_namespace("RegionDividers")
-
-	-- group
-	M.group = M.group or vim.api.nvim_create_augroup("RegionsRefresh", { clear = true })
+	vim.api.nvim_set_hl(0, "RegionDivider", {
+		link = "Comment",
+		default = true,
+	})
 
 	-- autocommands
-	vim.api.nvim_create_autocmd({ "BufWritePost", "BufEnter", "TextChanged", "InsertLeave" }, {
+	M.group = vim.api.nvim_create_augroup("RegionsRefresh", { clear = true })
+
+	vim.api.nvim_create_autocmd({
+		"BufEnter",
+		"TextChanged",
+		"TextChangedI",
+		"BufWritePost",
+	}, {
 		group = M.group,
 		callback = function(args)
-			if M.state[args.buf] then
-				M.state[args.buf].changedtick = nil
-			end
-			M.get_regions(args.buf)
+			M.parse_regions(args.buf)
+			M.redraw_extmarks(args.buf)
 		end,
 	})
 
 	vim.api.nvim_create_autocmd("BufWipeout", {
 		group = M.group,
 		callback = function(args)
-			M.state[args.buf] = nil
+			M.clear_regions(args.buf)
 		end,
 	})
 
-	-- keys
-	vim.keymap.set("n", options.keys.next, M.goto_next_region, { desc = "Next region" })
-	vim.keymap.set("n", options.keys.prev, M.goto_prev_region, { desc = "Previous region" })
+	-- scrollbar
+	require("scrollbar.handlers").register("Regions", function(bufnr)
+		return M.get_regions(bufnr)
+	end)
+
+	-- jumping
+	vim.keymap.set("n", options.keys.next, function()
+		M.jump_region(1)
+	end)
+	vim.keymap.set("n", options.keys.prev, function()
+		M.jump_region(-1)
+	end)
 end
 
 return M
