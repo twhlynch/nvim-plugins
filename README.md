@@ -50,8 +50,14 @@ return {
 		origami = { enabled = false },
 		pear = {
 			enabled = false,
-			source_exts = { "c", "cpp", "frag", "html" },
-			header_exts = { "h", "hpp", "vert", "js", "css" },
+			pairs = {
+				-- {
+				-- 	source_dirs = { "src", "source", "sources" },
+				-- 	header_dirs = { "include", "includes" },
+				-- 	source_exts = { "cpp", "c" },
+				-- 	header_exts = { "hpp", "h" },
+				-- },
+			},
 		},
 		regions = {
 			enabled = false,
