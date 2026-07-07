@@ -18,9 +18,9 @@
 | nolint              | Quickly silent clang warnings                                     |                                        |
 | breadcrumbs         | Highlight line numbers with cursor activity                       |                                        |
 | inlay               | Inject inlay hints into the buffer                                | Based on Davidyz/inlayhint-filler.nvim |
-| tasks               | Run VSCode tasks & launch configs                                 |                                        |
 | auto commit         | Silly plugin that commits after every change                      |                                        |
 | templates           | Default content for new files by name and extension               |                                        |
+| tasks               | [moved](https://github.com/twhlynch/tasks.nvim)                   |                                        |
 | notebook            | [moved](https://github.com/twhlynch/notebook.nvim)                |                                        |
 | elk                 | [moved](https://github.com/twhlynch/elk.nvim)                     |                                        |
 
@@ -141,12 +141,6 @@ return {
 		},
 		inlay = {
 			enabled = false,
-		},
-		tasks = {
-			enabled = false,
-			keybind = "<leader><CR>",
-			sign_icon = "▶",
-			sign_hl = "DiagnosticFloatingOk",
 		},
 		auto_commit = {
 			enabled = false,
