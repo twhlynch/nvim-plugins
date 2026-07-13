@@ -20,6 +20,7 @@
 | inlay               | Inject inlay hints into the buffer                                | Based on Davidyz/inlayhint-filler.nvim |
 | auto commit         | Silly plugin that commits after every change                      |                                        |
 | templates           | Default content for new files by name and extension               |                                        |
+| toggle              | Toggle common booleans with ctrl x & a                            |                                        |
 | tasks               | [moved](https://github.com/twhlynch/tasks.nvim)                   |                                        |
 | notebook            | [moved](https://github.com/twhlynch/notebook.nvim)                |                                        |
 | elk                 | [moved](https://github.com/twhlynch/elk.nvim)                     |                                        |
@@ -152,6 +153,17 @@ return {
 		templates = {
 			enabled = false,
 			templates_dir = vim.fn.stdpath("config") .. "/templates",
+		},
+		toggle = {
+			enabled = false,
+			mapping = {
+				["true"] = "false",
+				["false"] = "true",
+				["on"] = "off",
+				["off"] = "on",
+				["yes"] = "no",
+				["no"] = "yes",
+			},
 		},
 	},
 	keys = {
