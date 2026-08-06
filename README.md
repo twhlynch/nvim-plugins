@@ -198,6 +198,8 @@ return {
 		},
 		ufo_folds = {
 			enabled = false,
+			-- in "kevinhwang91/nvim-ufo" opts
+			-- fold_virt_text_handler = require("nvim-plugins.ufo_folds").fold_virt_text_handler,
 		},
 	},
 }
