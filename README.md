@@ -23,6 +23,7 @@ A collection of Neovim plugins for my personal use
 | auto commit     | Silly plugin that commits after every change                        |                                        |
 | templates       | Default content for new files by name and extension                 |                                        |
 | toggle          | Toggle common booleans with ctrl x & a                              |                                        |
+| typst preview   | Buggy live typst pdf viewer                                         |                                        |
 | tasks           | [moved to tasks.nvim](https://github.com/twhlynch/tasks.nvim)       |                                        |
 | notebook        | [moved to notebook.nvim](https://github.com/twhlynch/notebook.nvim) |                                        |
 | elk             | [moved to elk.nvim](https://github.com/twhlynch/elk.nvim)           |                                        |
@@ -183,6 +184,12 @@ return {
 				["yes"] = "no",
 				["no"] = "yes",
 			},
+		},
+		typst_preview = {
+			enabled = true,
+			key = "<leader>pt",
+			left = "<Left>",
+			right = "<Right>",
 		},
 	},
 }
