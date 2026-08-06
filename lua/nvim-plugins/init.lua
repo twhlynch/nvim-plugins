@@ -8,9 +8,6 @@ setmetatable(M, {
 	end,
 })
 
--- make Plugins object global
-_G.Plugins = M
-
 function M.load(name, opts)
 	local plugin = require("nvim-plugins." .. name)
 	-- safe setup

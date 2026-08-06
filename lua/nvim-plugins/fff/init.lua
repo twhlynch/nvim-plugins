@@ -147,4 +147,14 @@ function M.fff()
 	})
 end
 
+local options = {
+	key = "<leader><leader>",
+}
+
+function M.setup(opts)
+	options = vim.tbl_deep_extend("keep", opts or {}, options)
+
+	vim.keymap.set("n", options.key, M.fff, { desc = "FFF" })
+end
+
 return M

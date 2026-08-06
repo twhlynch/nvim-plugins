@@ -38,11 +38,21 @@ setup that plugin with the options specified overriding the defaults.
 return {
 	"twhlynch/nvim-plugins",
 	opts = {
-		blame = { enabled = false },
-		copy_lspconfig = { enabled = false },
-		fff = { enabled = false },
+		blame = {
+			enabled = false,
+			key = "<leader>bf",
+		},
+		copy_lspconfig = {
+			enabled = false,
+			key = "<leader>LSP",
+		},
+		fff = {
+			enabled = false,
+			key = "<leader><leader>",
+		},
 		oil_git = {
 			enabled = false,
+			refresh_key = "<leader>Ro",
 			highlight = {
 				OilGitAdded = { fg = "#7fa563" },
 				OilGitModified = { fg = "#f3be7c" },
@@ -54,6 +64,7 @@ return {
 		origami = { enabled = false },
 		pear = {
 			enabled = false,
+			key = "<leader>jp",
 			pairs = {
 				-- {
 				-- 	source_dirs = { "src", "source", "sources" },
@@ -81,10 +92,14 @@ return {
 		},
 		reminder = {
 			enabled = false,
+			ignore_key = "<leader>i",
+			toggle_key = "<leader>I",
 			notify = print,
 			numbers = false, -- highlight line or line numbers
 		},
 		reviews = {
+			view_key = "<leader>K",
+			refresh_key = "<leader>Rr",
 			enabled = false,
 			interval = 1800, -- 30 minutes
 			debug = false,
@@ -145,6 +160,7 @@ return {
 		},
 		inlay = {
 			enabled = false,
+			key = "<leader>hI",
 		},
 		auto_commit = {
 			enabled = false,
@@ -168,23 +184,6 @@ return {
 				["no"] = "yes",
 			},
 		},
-	},
-	keys = {
-		---@diagnostic disable: undefined-global
-		-- stylua: ignore start
-		{ "h", function() Plugins.origami.h() end, desc = "Origami h", },
-		{ "l", function() Plugins.origami.l() end, desc = "Origami l", },
-		{ "<leader>jp", function() Plugins.pear.jump_pair() end, desc = "Jump file pair", },
-		{ "<leader>K", function() Plugins.reviews.get_current_line_comments() end, desc = "Show line PR Review Comments", },
-		{ "<leader>bf", function() Plugins.blame.show_blame() end, desc = "Show file blame", },
-		{ "<leader>i", function() Plugins.reminder.ignore_buffer() end, desc = "Toggle ignoring format reminder for buffer", },
-		{ "<leader>I", function() Plugins.reminder.toggle() end, desc = "Toggle format reminder", },
-		{ "<leader>LSP", function() Plugins.copy_lspconfig.copy_lsp() end, desc = "Copy lsp config", },
-		{ "<leader><leader>", function() Plugins.fff.fff() end, desc = "FFF", },
-		{ "<leader>Rr", function() Plugins.reviews.get_pr_review_comments() end, desc = "Refresh Reviews", },
-		{ "<leader>Ro", function() Plugins.oil_git.update_git_status() end, desc = "Refresh Oil Git", },
-		{ "<leader>hI", mode = { "n", "x" }, function() Plugins.inlay.inject_inlay_hints() end, desc = "Inject inlay hints", },
-		-- stylua: ignore end
 	},
 }
 ```

@@ -1,6 +1,8 @@
 local M = {}
 
 local options = {
+	ignore_key = "<leader>i",
+	toggle_key = "<leader>I",
 	notify = print, -- output function
 	debug = false,
 	numbers = false,
@@ -34,7 +36,7 @@ local function highlight_unformatted_lines(bufnr, before, after)
 				end_line = end_line - 1,
 				hl_eol = true,
 				number_hl_group = "Conceal",
-    			priority = 100,
+				priority = 100,
 			})
 		else
 			vim.api.nvim_buf_set_extmark(bufnr, ns_id, start_line, 0, {
@@ -97,6 +99,9 @@ end
 
 function M.setup(opts)
 	options = vim.tbl_deep_extend("keep", opts or {}, options)
+
+	vim.keymap.set("n", options.ignore_key, M.ignore_buffer, { desc = "Toggle ignoring format reminder for buffer" })
+	vim.keymap.set("n", options.toggle_key, M.toggle, { desc = "Toggle format reminder" })
 
 	vim.api.nvim_create_autocmd("BufWritePre", {
 		group = vim.api.nvim_create_augroup("FormatReminder", { clear = true }),

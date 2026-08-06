@@ -1,9 +1,13 @@
 local M = {}
 
-local options = {}
+local options = {
+	key = "<leader>hI",
+}
 
 function M.setup(opts)
 	options = vim.tbl_deep_extend("keep", opts or {}, options)
+
+	vim.keymap.set({ "n", "x" }, options.key, M.inject_inlay_hints, { desc = "Inject inlay hints" })
 end
 
 function M.is_visual_mode()

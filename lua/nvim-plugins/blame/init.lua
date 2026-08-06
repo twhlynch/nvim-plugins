@@ -1,6 +1,8 @@
 local M = {}
 
-local options = {}
+local options = {
+	key = "<leader>bf",
+}
 
 local ns = nil
 
@@ -275,6 +277,8 @@ end
 
 function M.setup(opts)
 	options = vim.tbl_deep_extend("keep", opts or {}, options)
+
+	vim.keymap.set("n", options.key, M.show_blame, { desc = "Show file blame" })
 
 	ns = vim.api.nvim_create_namespace("GitBlameView")
 end

@@ -39,6 +39,9 @@ end
 
 function M.setup(opts)
 	options = vim.tbl_deep_extend("keep", opts or {}, options)
+
+	vim.keymap.set("n", "h", M.h, { desc = "Origami h" })
+	vim.keymap.set("n", "l", M.l, { desc = "Origami l" })
 end
 
 return M

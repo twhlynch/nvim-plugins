@@ -1,6 +1,7 @@
 local M = {}
 
 local options = {
+	key = "<leader>jp",
 	pairs = {
 		-- {
 		-- 	source_dirs = { "src", "source", "sources" },
@@ -139,6 +140,8 @@ end
 --- @param opts table
 function M.setup(opts)
 	options = vim.tbl_deep_extend("force", options, opts or {})
+
+	vim.keymap.set("n", options.key, M.jump_pair, { desc = "Jump file pair" })
 end
 
 return M

@@ -5,6 +5,8 @@ local M = {}
 local all_comments = {}
 local last_fetch_time = 0
 local options = {
+	view_key = "<leader>K",
+	refresh_key = "<leader>Rr",
 	interval = 1800, -- 30 minutes
 	debug = false,
 	highlight = nil, -- can be a hex string e.g. "#7E98E8"
@@ -203,6 +205,9 @@ end
 
 function M.setup(opts)
 	options = vim.tbl_deep_extend("keep", opts or {}, options)
+
+	vim.keymap.set("n", options.view_key, M.get_current_line_comments, { desc = "Show line PR Review Comments" })
+	vim.keymap.set("n", options.refresh_key, M.get_pr_review_comments, { desc = "Refresh Reviews" })
 
 	-- setup
 	ns = vim.api.nvim_create_namespace("pr_review_comments")

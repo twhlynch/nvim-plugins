@@ -1,6 +1,8 @@
 local M = {}
 
-local options = {}
+local options = {
+	key = "<leader>LSP",
+}
 
 local LSP_PATH = vim.fn.stdpath("data") .. "/lazy/nvim-lspconfig/lsp"
 local TARGET_PATH = vim.fn.stdpath("config") .. "/lsp"
@@ -46,6 +48,8 @@ end
 
 function M.setup(opts)
 	options = vim.tbl_deep_extend("keep", opts or {}, options)
+
+	vim.keymap.set("n", options.key, M.copy_lsp, { desc = "Copy lsp config" })
 
 	vim.api.nvim_create_user_command("LspCopy", M.copy_lsp, {})
 end

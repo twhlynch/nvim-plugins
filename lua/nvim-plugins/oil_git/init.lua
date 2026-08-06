@@ -6,6 +6,7 @@ local M = {}
 local git_status = {}
 
 local options = {
+	refresh_key = "<leader>Ro",
 	highlight = {
 		OilGitAdded = { fg = "#7fa563" },
 		OilGitModified = { fg = "#f3be7c" },
@@ -149,6 +150,8 @@ function M.setup(opts)
 			vim.api.nvim_set_hl(0, name, opt)
 		end
 	end
+
+	vim.keymap.set("n", options.refresh_key, M.update_git_status, { desc = "Refresh Oil Git" })
 
 	local group = vim.api.nvim_create_augroup("OilGitStatus", { clear = true })
 
