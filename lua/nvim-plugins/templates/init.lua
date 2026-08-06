@@ -4,6 +4,60 @@ local options = {
 	templates_dir = vim.fn.stdpath("config") .. "/templates",
 }
 
+local function eval(expr, ctx)
+	ctx = ctx or {}
+	setmetatable(ctx, { __index = _G })
+
+	local f, err = load("return " .. expr, "expr", "t", ctx)
+	if not f then
+		return nil, err
+	end
+
+	return pcall(f)
+end
+
+local function substitute_variables(lines, path)
+	local f = function(modifier)
+		return vim.fn.fnamemodify(path, modifier)
+	end
+	local d = function(fmt)
+		return os.date(fmt)
+	end
+	local env = function(name)
+		return os.getenv(name) or ""
+	end
+	local uuid = function()
+		return vim.fn.system("uuidgen"):gsub("\n", "")
+	end
+
+	local ctx = {
+		-- util
+		f = f,
+		d = d,
+		env = env,
+		uuid = uuid,
+
+		-- common
+		filename = f(":t"),
+		year = d("%Y"),
+		date = d("%Y-%m-%d"),
+		time = d("%H:%M:%S"),
+		project = vim.fn.fnamemodify(vim.fn.getcwd(), ":t"),
+	}
+
+	local result = {}
+
+	for _, line in ipairs(lines) do
+		local substituted = line:gsub("{{(.-)}}", function(expr)
+			local ok, res = eval(expr, ctx)
+			return ok and res or (expr and "{{" .. expr .. "}}" or "")
+		end)
+		table.insert(result, substituted)
+	end
+
+	return result
+end
+
 local function read_file(path)
 	local fd = io.open(path, "r")
 
@@ -69,6 +123,8 @@ local function apply_template(args)
 		table.remove(lines, #lines)
 	end
 
+	lines = substitute_variables(lines, args.file)
+
 	vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
 end
 
@@ -89,6 +145,8 @@ local function apply_template_oil(url)
 	if not content then
 		return
 	end
+
+	content = substitute_variables(content, path)
 
 	local fd = io.open(path, "w")
 	if fd then
