@@ -1,4 +1,6 @@
-# A collection of Neovim plugins for my personal use
+# nvim-plugins
+
+A collection of Neovim plugins for my personal use
 
 | Plugin          | Description                                                         | Credit                                 |
 | --------------- | ------------------------------------------------------------------- | -------------------------------------- |
@@ -29,9 +31,10 @@
 
 Example for `lazy.nvim`.
 
-All plugins are disabled by default. Changing `enabled` to true will setup that plugin with the options specified overriding the defaults.
+All plugins are disabled by default. Changing `enabled` to true will load and
+setup that plugin with the options specified overriding the defaults.
 
-````lua
+```lua
 return {
 	"twhlynch/nvim-plugins",
 	opts = {
@@ -184,4 +187,4 @@ return {
 		-- stylua: ignore end
 	},
 }
-````
+```
