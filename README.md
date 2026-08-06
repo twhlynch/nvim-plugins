@@ -62,7 +62,9 @@ return {
 				OilGitUntracked = { fg = "#c48282" },
 			},
 		},
-		origami = { enabled = false },
+		origami = {
+			enabled = false,
+		},
 		pear = {
 			enabled = false,
 			key = "<leader>jp",
@@ -109,7 +111,9 @@ return {
 				scrollbar = false,
 			},
 		},
-		scrollbar_marks = { enabled = false },
+		scrollbar_marks = {
+			enabled = false,
+		},
 		surround = {
 			enabled = false,
 			prefix = "s",
