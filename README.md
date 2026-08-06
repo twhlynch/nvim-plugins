@@ -190,7 +190,7 @@ return {
 			},
 		},
 		typst_preview = {
-			enabled = true,
+			enabled = false,
 			key = "<leader>pt",
 			left = "<Left>",
 			right = "<Right>",
