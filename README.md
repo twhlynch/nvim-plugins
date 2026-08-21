@@ -25,6 +25,7 @@ A collection of Neovim plugins for my personal use
 | toggle          | Toggle common booleans with ctrl x & a                              |                                        |
 | typst preview   | Buggy live typst pdf viewer                                         |                                        |
 | ufo folds       | Specific fold handler for nvim ufo                                  |                                        |
+| badchars        | Highlight invisible characters                                      |                                        |
 | tasks           | [moved to tasks.nvim](https://github.com/twhlynch/tasks.nvim)       |                                        |
 | notebook        | [moved to notebook.nvim](https://github.com/twhlynch/notebook.nvim) |                                        |
 | elk             | [moved to elk.nvim](https://github.com/twhlynch/elk.nvim)           |                                        |
@@ -200,6 +201,11 @@ return {
 			enabled = false,
 			-- in "kevinhwang91/nvim-ufo" opts
 			-- fold_virt_text_handler = require("nvim-plugins.ufo_folds").fold_virt_text_handler,
+		},
+		badchars = {
+			enabled = false,
+			hl = "SpellBad",
+			-- add = { [[\u2014]] }, -- (em dash)
 		},
 	},
 }
