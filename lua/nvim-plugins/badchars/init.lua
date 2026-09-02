@@ -39,6 +39,8 @@ local bad_chars = {
 }
 -- stylua: ignore end
 
+local matched_windows = {}
+
 function M.setup(opts)
 	options = vim.tbl_deep_extend("keep", opts or {}, options)
 
@@ -46,6 +48,13 @@ function M.setup(opts)
 	vim.api.nvim_create_autocmd({ "BufWinEnter", "WinEnter" }, {
 		pattern = "*",
 		callback = function()
+			local win = vim.api.nvim_get_current_win()
+
+			if matched_windows[win] then
+				return
+			end
+			matched_windows[win] = true
+
 			local chars = table.concat(vim.list_extend(vim.deepcopy(bad_chars), options.add))
 			vim.fn.matchadd(options.hl, "[" .. chars .. "]")
 		end,
