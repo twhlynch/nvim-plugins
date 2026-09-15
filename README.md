@@ -74,8 +74,8 @@ return {
 				-- {
 				-- 	source_dirs = { "src", "source", "sources" },
 				-- 	header_dirs = { "include", "includes" },
-				-- 	source_exts = { "cpp", "c" },
-				-- 	header_exts = { "hpp", "h" },
+				-- 	source_exts = { ".cpp", ".c" },
+				-- 	header_exts = { ".hpp", ".h" },
 				-- },
 			},
 		},

@@ -6,16 +6,22 @@ local options = {
 		-- {
 		-- 	source_dirs = { "src", "source", "sources" },
 		-- 	header_dirs = { "include", "includes" },
-		-- 	source_exts = { "cpp", "c", "cc", "cxx" },
-		-- 	header_exts = { "hpp", "h", "hxx" },
+		-- 	source_exts = { ".cpp", ".c", ".cc", ".cxx" },
+		-- 	header_exts = { ".hpp", ".h", ".hxx" },
 		-- },
 		-- {
-		-- 	source_exts = { "frag", "fs" },
-		-- 	header_exts = { "vert", "vs" },
+		-- 	source_exts = { ".frag", ".fs" },
+		-- 	header_exts = { ".vert", ".vs" },
 		-- },
 		-- {
-		-- 	source_exts = { "html" },
-		-- 	header_exts = { "js", "css" },
+		-- 	source_exts = { ".html" },
+		-- 	header_exts = { ".js", ".css" },
+		-- },
+		-- {
+		-- 	source_dirs = { "main" },
+		-- 	header_dirs = { "test" },
+		-- 	source_exts = { ".java" },
+		-- 	header_exts = { "Tests.java", "Test.java" },
 		-- },
 	},
 }
@@ -24,18 +30,37 @@ local options = {
 
 --- @param path string
 local function split_ext(path)
-	local ext = vim.fn.fnamemodify(path, ":e")
-	if ext == "" then
-		return path, ""
+	local best_suffix = ""
+	local best_kind = nil
+
+	for _, pair in ipairs(options.pairs) do
+		for _, suffix in ipairs(pair.source_exts or {}) do
+			if #suffix > #best_suffix and path:sub(-#suffix) == suffix then
+				best_suffix = suffix
+				best_kind = "source"
+			end
+		end
+
+		for _, suffix in ipairs(pair.header_exts or {}) do
+			if #suffix > #best_suffix and path:sub(-#suffix) == suffix then
+				best_suffix = suffix
+				best_kind = "header"
+			end
+		end
 	end
-	return vim.fn.fnamemodify(path, ":r"), ext
+
+	if best_suffix == "" then
+		return path, "", nil
+	end
+
+	return path:sub(1, -#best_suffix - 1), best_suffix, best_kind
 end
 
 --- @param root string
 --- @param exts string[]
 local function try_extensions(root, exts)
 	for _, ext in ipairs(exts) do
-		local candidate = root .. "." .. ext
+		local candidate = root .. ext
 		if vim.fn.filereadable(candidate) == 1 then
 			return candidate
 		end
@@ -48,13 +73,14 @@ end
 --- @param file string
 --- @param pair table
 local function find_pair(file, pair)
-	local root, ext = split_ext(file)
+	local root, ext, kind = split_ext(file)
 
-	local is_source = vim.tbl_contains(pair.source_exts, ext)
-	local is_header = vim.tbl_contains(pair.header_exts, ext)
-	if not (is_source or is_header) then
+	if kind == nil then
 		return nil
 	end
+
+	local is_source = kind == "source"
+	local is_header = kind == "header"
 
 	local target_exts = {}
 	if is_source then
