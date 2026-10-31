@@ -102,8 +102,10 @@ local function parse_css_variables(bufnr)
 	local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
 	for _, line in ipairs(lines) do
 		-- --var-name: value;
-		for name, value in line:gmatch("%s*(%-%-[%w%-]+)%s*:%s*([^;]+);") do
-			css_vars[name] = value
+		if line:find("--", 1, true) then
+			for name, value in line:gmatch("%s*(%-%-[%w%-]+)%s*:%s*([^;]+);") do
+				css_vars[name] = value
+			end
 		end
 	end
 end
