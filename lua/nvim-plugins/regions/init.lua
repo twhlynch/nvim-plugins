@@ -47,8 +47,6 @@ function M.parse_regions(bufnr)
 						line = i - 1,
 						text = text .. "─",
 						type = "Info",
-						level = 1,
-						priority = 1,
 					})
 				end
 
@@ -162,9 +160,27 @@ function M.setup(opts)
 	})
 
 	-- scrollbar
-	require("scrollbar.handlers").register("Regions", function(bufnr)
-		return M.get_regions(bufnr)
-	end)
+	require("scrollbar.providers").register({
+		name = "Regions",
+		refresh_owner = { buffer = "provider" },
+		setup = function(context)
+			local group = context.create_augroup("RegionsUpdates")
+			vim.api.nvim_create_autocmd({ "BufEnter", "TextChanged", "TextChangedI", "TextChangedP", "BufWinEnter", "WinEnter" }, {
+				group = group,
+				callback = function(args)
+					local bufnr = args.buf ~= 0 and args.buf or vim.api.nvim_get_current_buf()
+					if context.is_buffer_eligible(bufnr) then
+						context.set_marks(bufnr, M.get_regions(bufnr))
+					else
+						context.clear_marks(bufnr)
+					end
+				end,
+			})
+		end,
+		refresh = function(bufnr)
+			return M.get_regions(bufnr)
+		end,
+	})
 
 	-- jumping
 	vim.keymap.set("n", options.keys.next, function()

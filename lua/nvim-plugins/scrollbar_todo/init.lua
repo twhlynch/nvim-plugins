@@ -60,7 +60,6 @@ function M.handler()
 				line = l,
 				text = vim.trim(kw_config.icon or "!"),
 				type = color_mapping[kw_config.color] or "Info",
-				level = 4,
 			})
 		end
 	end
@@ -70,7 +69,25 @@ function M.handler()
 end
 
 function M.setup(opts)
-	require("scrollbar.handlers").register("TodoCommentLines", M.handler)
+	require("scrollbar.providers").register({
+		name = "TodoCommentLines",
+		refresh_owner = { buffer = "provider" },
+		setup = function(context)
+			local group = context.create_augroup("TodoCommentLinesUpdates")
+			vim.api.nvim_create_autocmd({ "BufEnter", "TextChanged", "TextChangedI", "TextChangedP", "BufWinEnter", "WinEnter" }, {
+				group = group,
+				callback = function(args)
+					local bufnr = args.buf ~= 0 and args.buf or vim.api.nvim_get_current_buf()
+					if context.is_buffer_eligible(bufnr) then
+						context.set_marks(bufnr, M.handler(bufnr))
+					else
+						context.clear_marks(bufnr)
+					end
+				end,
+			})
+		end,
+		refresh = M.handler,
+	})
 end
 
 return M
