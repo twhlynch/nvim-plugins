@@ -11,7 +11,11 @@ local options = {
 local ns = vim.api.nvim_create_namespace("breadcrumbs")
 
 local heat = {}
+local totals = {}
 local gradient = {}
+
+-- extreme fade bound
+local COLD = 0.05
 
 function M.setup(opts)
 	options = vim.tbl_deep_extend("keep", opts or {}, options)
@@ -84,18 +88,19 @@ local function compute_index(value)
 	return math.floor(t * (256 - 1))
 end
 
-local function total_heat(map)
+-- drops entries that faded out
+local function decay(map)
 	local sum = 0
-	for _, v in pairs(map) do
-		sum = sum + v
+	for k, v in pairs(map) do
+		local nv = v * options.decay_rate
+		if nv < COLD then
+			map[k] = nil
+		else
+			map[k] = nv
+			sum = sum + nv
+		end
 	end
 	return sum
-end
-
-local function decay(map)
-	for k, v in pairs(map) do
-		map[k] = v * options.decay_rate
-	end
 end
 
 function M.visit()
@@ -114,10 +119,13 @@ function M.visit()
 	local line = vim.api.nvim_win_get_cursor(0)[1]
 
 	map[line] = (map[line] or 0) + 1
+	local total = (totals[file] or 0) + 1
 
-	if total_heat(map) > options.max_moves then
-		decay(map)
+	if total > options.max_moves then
+		total = decay(map)
 	end
+
+	totals[file] = total
 
 	local idx = compute_index(map[line])
 	if not idx then
