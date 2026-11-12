@@ -26,6 +26,7 @@ A collection of Neovim plugins for my personal use
 | typst preview   | Buggy live typst pdf viewer                                         |                                        |
 | ufo folds       | Specific fold handler for nvim ufo                                  |                                        |
 | badchars        | Highlight invisible characters                                      |                                        |
+| simple_todo     | Simple TODO list popup with autosave to a specified file            |                                        |
 | tasks           | [moved to tasks.nvim](https://github.com/twhlynch/tasks.nvim)       |                                        |
 | notebook        | [moved to notebook.nvim](https://github.com/twhlynch/notebook.nvim) |                                        |
 | elk             | [moved to elk.nvim](https://github.com/twhlynch/elk.nvim)           |                                        |
@@ -206,6 +207,11 @@ return {
 			enabled = false,
 			hl = "SpellBad",
 			-- add = { [[\u2014]] }, -- (em dash)
+		},
+		simple_todo = {
+			enabled = false,
+			keymap = "<leader><Tab>",
+			filepath = "~/TODO.md",
 		},
 	},
 }
