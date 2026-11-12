@@ -56,7 +56,7 @@ function M.setup(opts)
 			matched_windows[win] = true
 
 			local chars = table.concat(vim.list_extend(vim.deepcopy(bad_chars), options.add))
-			vim.fn.matchadd(options.hl, "[" .. chars .. "]")
+			vim.w[win].badchars_matchid = vim.fn.matchadd(options.hl, "[" .. chars .. "]")
 		end,
 	})
 end
