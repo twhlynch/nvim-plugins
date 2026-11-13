@@ -1,8 +1,9 @@
+local Scan = require("nvim-plugins.util.scan")
+local util = require("nvim-plugins.util")
+
 local M = {}
 
-local cache = {}
-local changed = true
-local last_changedtick = nil
+local scanners = {}
 
 local color_mapping = {
 	info = "Info",
@@ -14,57 +15,92 @@ local color_mapping = {
 local config = require("todo-comments.config")
 local highlight = require("todo-comments.highlight")
 
-function M.handler()
-	local changedtick = vim.b.changedtick
-	if changedtick ~= last_changedtick then
-		changed = true
-		last_changedtick = changedtick
-	end
-	if not changed then
-		return cache
-	end
-	changed = false
-	local markers = {}
+local function make_scanner(bufnr)
+	return Scan.new(bufnr, {
+		-- quick check just uses the keywords list
+		needles = function()
+			return vim.tbl_keys(config.keywords or {})
+		end,
+		-- main check
+		match = function(line, lnum)
+			local opts = config.options or {}
+			local keywords = opts.keywords or {}
 
-	local opts = config.options or {}
-	opts.keywords = opts.keywords or {}
+			-- match line
+			local ok, start, _, kw = pcall(highlight.match, line)
+			if not ok or not start then
+				return nil
+			end
 
-	local buf = vim.api.nvim_get_current_buf()
-
-	for l = 1, vim.api.nvim_buf_line_count(buf) do
-		local line = vim.api.nvim_buf_get_lines(buf, l - 1, l, false)[1] or ""
-		local ok, start, _, kw = pcall(highlight.match, line)
-
-		if ok and start then
-			if opts.highlight.comments_only and highlight.is_comment(buf, l - 1, start) == false then
+			-- check comment
+			local highlight_opts = opts.highlight or {}
+			if highlight_opts.comments_only and util.is_comment(bufnr, lnum - 1, start) == false then
 				kw = nil
 			end
-		end
 
-		if kw and not opts.keywords[kw] then
-			for k, v in pairs(opts.keywords) do
-				if vim.tbl_contains(v.alt or {}, kw) then
-					kw = k
-					break
+			-- check keyword
+			if kw and not keywords[kw] then
+				for k, v in pairs(keywords) do
+					local alt = type(v) == "table" and v.alt or nil
+					if alt and vim.tbl_contains(alt, kw) then
+						kw = k
+						break
+					end
+				end
+
+				if not keywords[kw] then
+					kw = nil
 				end
 			end
 
-			if not opts.keywords[kw] then
-				kw = nil
+			if not kw then
+				return nil
 			end
-		end
 
-		if kw then
-			local kw_config = (opts.keywords[kw] or {})
-			table.insert(markers, {
-				line = l,
+			-- return marks
+			local kw_config = type(keywords[kw]) == "table" and keywords[kw] or {}
+			return {
 				text = vim.trim(kw_config.icon or "!"),
 				type = color_mapping[kw_config.color] or "Info",
-			})
+				level = 4,
+			}
+		end,
+	})
+end
+
+local function get_scanner(bufnr)
+	local scanner = scanners[bufnr]
+
+	if not scanner or scanner.detached then
+		if not vim.api.nvim_buf_is_valid(bufnr) then
+			return nil
 		end
+
+		scanner = make_scanner(bufnr)
+		scanners[bufnr] = scanner
 	end
 
-	cache = markers
+	return scanner
+end
+
+function M.handler(buf)
+	local scanner = get_scanner(buf)
+	if not scanner then
+		return {}
+	end
+
+	local entries = scanner:all()
+
+	local markers = {}
+	for _, entry in ipairs(entries) do
+		local value = entry.value
+		markers[#markers + 1] = {
+			line = entry.line,
+			text = value.text,
+			type = value.type,
+		}
+	end
+
 	return markers
 end
 
@@ -87,6 +123,19 @@ function M.setup(opts)
 			})
 		end,
 		refresh = M.handler,
+	})
+
+	local group = vim.api.nvim_create_augroup("ScrollbarTodoRefresh", { clear = true })
+
+	vim.api.nvim_create_autocmd("BufWipeout", {
+		group = group,
+		callback = function(args)
+			local scanner = scanners[args.buf]
+			if scanner then
+				scanner:destroy()
+				scanners[args.buf] = nil
+			end
+		end,
 	})
 end
 

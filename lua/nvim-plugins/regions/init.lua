@@ -1,3 +1,6 @@
+local Scan = require("nvim-plugins.util.scan")
+local util = require("nvim-plugins.util")
+
 local M = {}
 
 --- @class Regions.Options
@@ -21,53 +24,129 @@ local options = {
 ---	@field line integer line number
 --- @field text string mark text for scrollbar
 --- @field type string scrollbar type
---- @field level integer scrollbar level
---- @field priority integer scrollbar priority
 
 --- @type table<integer, Regions.Region[]>
 M.regions = {}
 
 -- MARK: internals
 
+local scanners = {}
+local drawn = {}
+local versions = {}
+local divider_str = ""
+
 --- @param bufnr integer
-function M.parse_regions(bufnr)
-	local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+local function make_scanner(bufnr)
+	return Scan.new(bufnr, {
+		needles = function()
+			return options.region_markers
+		end,
+		match = function(line, lnum)
+			for _, pattern in ipairs(options.region_markers) do
+				local loc = line:find(pattern, 1, true)
 
-	M.regions[bufnr] = {}
+				if loc then
+					-- FIXME: not working
+					-- if util.is_comment(bufnr, lnum - 1, loc - 1) == false then
+					-- 	return nil
+					-- end
 
-	for i, line in ipairs(lines) do
-		for _, pattern in ipairs(options.region_markers) do
-			local loc = line:find(pattern, 1, true)
+					local text = vim.trim(line:sub(loc + #pattern))
 
-			if loc then
-				local text = vim.trim(line:sub(loc + #pattern))
+					if text ~= "-" then
+						return {
+							text = text .. "─",
+							type = "Info",
+						}
+					end
 
-				if text ~= "-" then
-					table.insert(M.regions[bufnr], {
-						line = i - 1,
-						text = text .. "─",
-						type = "Info",
-					})
+					return nil
 				end
-
-				break
 			end
+
+			return nil
+		end,
+	})
+end
+
+--- @param bufnr integer
+function M.get_scanner(bufnr)
+	local scanner = scanners[bufnr]
+
+	if not scanner or scanner.detached then
+		if not vim.api.nvim_buf_is_valid(bufnr) then
+			return nil
 		end
+
+		scanner = make_scanner(bufnr)
+		scanners[bufnr] = scanner
+		M.regions[bufnr] = nil
+		versions[bufnr] = nil
 	end
+
+	return scanner
+end
+
+--- @param entries { line: integer, value: table }[]
+local function to_list(entries)
+	local list = {}
+
+	for _, entry in ipairs(entries) do
+		local value = entry.value
+		list[#list + 1] = {
+			line = entry.line - 1,
+			text = value.text,
+			type = value.type,
+		}
+	end
+
+	return list
 end
 
 --- @param bufnr integer
 function M.get_regions(bufnr)
-	if not M.regions[bufnr] then
-		M.parse_regions(bufnr)
+	local scanner = M.get_scanner(bufnr)
+	if not scanner then
+		return {}
 	end
 
-	return M.regions[bufnr]
+	-- rescan dirty lines
+	scanner:update()
+
+	local cached = M.regions[bufnr]
+	if cached and versions[bufnr] == scanner.version then
+		return cached
+	end
+
+	local list = to_list(scanner:entries())
+	M.regions[bufnr] = list
+	versions[bufnr] = scanner.version
+	return list
+end
+
+--- @param bufnr integer
+function M.parse_regions(bufnr)
+	local scanner = M.get_scanner(bufnr)
+	if not scanner then
+		return
+	end
+
+	scanner:invalidate()
+	scanner:update()
+	M.get_regions(bufnr)
 end
 
 --- @param bufnr integer
 function M.clear_regions(bufnr)
+	local scanner = scanners[bufnr]
+	if scanner then
+		scanner:destroy()
+	end
+
+	scanners[bufnr] = nil
 	M.regions[bufnr] = nil
+	versions[bufnr] = nil
+	drawn[bufnr] = nil
 end
 
 -- MARK: rendering
@@ -77,9 +156,20 @@ function M.redraw_extmarks(bufnr)
 	if not options.divider.enabled then
 		return
 	end
-	vim.api.nvim_buf_clear_namespace(bufnr, M.ns, 0, -1)
+
+	local scanner = M.get_scanner(bufnr)
+	if not scanner then
+		return
+	end
 
 	local regions = M.get_regions(bufnr)
+
+	-- extmarks persist in the buffer, only redraw when regions actually changed
+	if drawn[bufnr] == scanner.version then
+		return
+	end
+
+	vim.api.nvim_buf_clear_namespace(bufnr, M.ns, 0, -1)
 
 	local line_count = vim.api.nvim_buf_line_count(bufnr)
 
@@ -88,13 +178,15 @@ function M.redraw_extmarks(bufnr)
 		if row < line_count then
 			vim.api.nvim_buf_set_extmark(bufnr, M.ns, row, 0, {
 				virt_text = { {
-					options.divider.char:rep(999),
+					divider_str,
 					options.divider.hl_group,
 				} },
 				virt_text_pos = "eol",
 			})
 		end
 	end
+
+	drawn[bufnr] = scanner.version
 end
 
 -- MARK: interaction
@@ -127,6 +219,7 @@ end
 --- @param opts Regions.Options
 function M.setup(opts)
 	options = vim.tbl_deep_extend("force", options, opts or {})
+	divider_str = options.divider.char:rep(999)
 
 	-- highlights
 	M.ns = vim.api.nvim_create_namespace("RegionDividers")
@@ -147,7 +240,6 @@ function M.setup(opts)
 	}, {
 		group = M.group,
 		callback = function(args)
-			M.parse_regions(args.buf)
 			M.redraw_extmarks(args.buf)
 		end,
 	})
