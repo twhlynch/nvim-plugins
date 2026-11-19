@@ -9,7 +9,7 @@ local options = {
 	css = false,
 	redact = false,
 	patterns = {
-		hex = "0?[#x]%x%x%x%x?%x?%x?%x?%x?%f[%W]", -- 3 - 8 length hex. # or 0x
+		hex = "%f[%w#]0?[#x]%x%x%x%x?%x?%x?%x?%x?%f[%W]", -- 3 - 8 length hex. # or 0x
 		rgb = "rgba?%(%d%d?%d?, ?%d%d?%d?, ?%d%d?%d?,? ?%d?%.?%d%)", -- rgb or rgba css color
 		ansi = "%[[34]8;2;%d%d?%d?;%d%d?%d?;%d%d?%d?m%f[%W]", -- r;g;b ansi code for fg or bg
 		env = '".-"', -- env values
@@ -24,6 +24,7 @@ local options = {
 -- [38;2;0;255;255m & [48;2;0;255;255m & [48;2;0;255;999m
 -- rgb(0, 255, 255) & rgb(0,255,255)
 -- rgba(0, 255, 255, 0.5) & rgba(0,255,255,0.5)
+-- exceed - should not highlight
 
 -- from hipatterns.gen_highlighter.hex_color
 function M.hex_handler(_, _, data)
