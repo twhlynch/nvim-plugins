@@ -19,6 +19,7 @@ A collection of Neovim plugins for my personal use
 | ufo folds       | Specific fold handler for nvim ufo                                  |                                        |
 | badchars        | Highlight invisible characters                                      |                                        |
 | simple_todo     | Simple TODO list popup with autosave to a specified file            |                                        |
+| update actions  | Warn when github workflow actions are outdated                      |                                        |
 | blame           | Viewing Git blame of all lines in a buffer                          | Based on VSCode                        |
 | breadcrumbs     | Highlight line numbers with cursor activity                         |                                        |
 | scrollbar marks | Show marks in nvim-scrollbar                                        | By chrisgrieser                        |
@@ -291,6 +292,18 @@ simple_todo = {
 	enabled = true,
 	keymap = "<leader><Tab>",
 	filepath = "~/TODO.md",
+},
+```
+
+</details>
+
+<details><summary>update_actions</summary>
+
+```lua
+update_actions = {
+	enabled = true,
+	ttl_days = 7,
+	severity = vim.diagnostic.severity.WARN,
 },
 ```
 
