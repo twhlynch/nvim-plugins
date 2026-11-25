@@ -13,10 +13,11 @@ function M.flag_from_diagnostic(diagnostic)
 end
 
 function M.insert_silence_at_line(bufnr, line, flag)
-	local silence_text = " // NOLINT"
-	if flag ~= nil then
-		silence_text = silence_text .. "(" .. flag .. ")"
-	end
+	local silence_text_lookup = {
+		["unused-includes"] = "IWYU pragma: keep",
+	}
+
+	local silence_text = " // " .. (silence_text_lookup[flag] or ("NOLINT" .. (flag and ("(" .. flag .. ")") or "")))
 
 	local current_line = vim.api.nvim_buf_get_lines(bufnr, line, line + 1, false)[1]
 	if current_line ~= nil then
