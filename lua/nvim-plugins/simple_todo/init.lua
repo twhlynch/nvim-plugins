@@ -49,6 +49,7 @@ function M.setup(opts)
 			title_pos = "center",
 		})
 
+		vim.wo[M.todo_win].wrap = true
 		vim.bo[buf].bufhidden = "wipe"
 		vim.b[buf].disable_autoformat = true
 
